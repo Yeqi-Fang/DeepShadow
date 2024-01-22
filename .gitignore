@@ -36,6 +36,7 @@ share/python-wheels/
 logs_classification/
 logs_recognition/
 logs_yolo/
+!logs_yolo/results.xlsx
 circle/
 yolov5/
 yolov7/
