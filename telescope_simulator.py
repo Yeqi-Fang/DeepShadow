@@ -228,4 +228,4 @@ if __name__ == '__main__':
     
     # image_arr = telescope_simulator.get_image(input_image=input_image)
 
-    telescope_simulator.generate_image(r'Telescope_Simulator-master/output_images_2/psf.png', show=True)
+    telescope_simulator.generate_image(r'Telescope_Simulator-master/output_images/psf.png', show=True)
