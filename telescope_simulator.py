@@ -49,7 +49,7 @@ class TelescopeSimulator():
         
         self.intensity = self.get_intensity(self.image_arr, show=show)
         self.convolved_array = self.get_convolved_image(self.image_arr, self.intensity, show=show)
-
+        
         
         
     def get_physical_parameters(self):
