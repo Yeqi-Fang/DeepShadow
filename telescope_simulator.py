@@ -12,7 +12,9 @@ class TelescopeSimulator():
     def __init__(self, input_image, telescope_diameter_m, telescope_focal_length_m,
                  seeing_arcsec_500nm, zenith_angle_deg, atmosphere, wavelength, CCD_pixel_size,
                  CCD_pixel_count, Num_psfs_to_gen, pixels_per_ro, show=True):
-        """_summary_
+        """ 
+        
+        Modeling optical telescope imaging, including optical diffraction and atmospheric scattering effects
 
         Args:
             input_image (str or numpy.ndarray): _description_
@@ -28,7 +30,6 @@ class TelescopeSimulator():
             pixels_per_ro (int): how well you wish to sample your phase screen
             show (bool): True or False, if True shows the psf and phase screen
         """
-        
 
         self.telescope_diameter_m = telescope_diameter_m
         self.telescope_focal_length_m = telescope_focal_length_m
