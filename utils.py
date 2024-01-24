@@ -1,14 +1,18 @@
-import os
 import glob as glob
 import matplotlib.pyplot as plt
 import cv2
 import random
-import numpy as np
-import datetime
-import  tensorboard
 
 
 def hex_to_rgb(hex_color):
+    """convert hex string to rgb tuple
+
+    Args:
+        hex_color (str): some hex code thing like #A1876B
+
+    Returns:
+        tuple(uint8, uint8, uint8): r g b color
+    """    
     # Remove the '#' if present
     hex_color = hex_color.lstrip('#')
     
@@ -27,6 +31,14 @@ colors = list(map(hex_to_rgb, colors))
 
 # Function to convert bounding boxes in YOLO format to xmin, ymin, xmax, ymax.
 def yolo2bbox(bboxes):
+    """_summary_
+
+    Args:
+        bboxes (tuple): _description_
+
+    Returns:
+        _type_: _description_
+    """    
     xmin, ymin = bboxes[0]-bboxes[2]/2, bboxes[1]-bboxes[3]/2
     xmax, ymax = bboxes[0]+bboxes[2]/2, bboxes[1]+bboxes[3]/2
     return xmin, ymin, xmax, ymax
@@ -76,6 +88,16 @@ def plot_box(image, bboxes, labels):
     return image
 
 def plot_circle(image, bboxes, labels):
+    """_summary_
+
+    Args:
+        image (_type_): _description_
+        bboxes (_type_): _description_
+        labels (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """    
     # Need the image height and width to denormalize
     # the bounding box coordinates
     h, w, _ = image.shape

@@ -59,7 +59,7 @@ class BH_stars_img():
         X, Y = np.meshgrid(x, y)
         X /= size / 2
         Y /= size / 2
-        rho = np.random.uniform(0, 0.3)
+        rho = np.random.uniform(0, 0.1)
         dist_out = np.sqrt((X / sigma_x)**2 + (Y / sigma_y)**2 - 2*rho*X*Y / sigma_x / sigma_y)
         dist_out = np.sqrt((X / sigma_x)**2 + (Y / sigma_y)**2 - 2*rho*X*Y / sigma_x / sigma_y)
         alpha = np.random.uniform(10, 15)
@@ -129,7 +129,7 @@ class BH_stars_img():
             sigma_x = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
             sigma_y = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
             luminosity = (size - self.stars_lower_size) / (self.stars_upper_size - self.stars_lower_size) * \
-                         np.abs(np.random.normal(0.5, 0.3))  # Maximum brightness at the center
+                         np.random.uniform(0.5, 0.8)  # Maximum brightness at the center
             brightness = self.generate_distribution(size, sigma_x, sigma_y, luminosity)
             larger_img, xc, yc = self.put_small_images_tolarge_background(brightness, self.height, self.width, size)
             self.stars_BHs_img += larger_img
@@ -158,7 +158,7 @@ class BH_stars_img():
             BH_size = np.random.randint(low=self.stars_lower_size, high=self.stars_upper_size)
             BHimg_small = cv2.resize(BHimg, (BH_size, BH_size))
             BHimg_small = BHimg_small.astype(np.float64)
-            bright_factor = np.random.uniform(0.4, 0.8)
+            bright_factor = np.random.uniform(0.6, 0.9)
             BHimg_small *= bright_factor
             BHimg_small = BHimg_small.astype(np.int64)
             BHimg_small = np.where(BHimg_small < self.bg_color, self.bg_color, BHimg_small)
