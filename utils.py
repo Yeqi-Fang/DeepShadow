@@ -31,7 +31,7 @@ colors = list(map(hex_to_rgb, colors))
 
 # Function to convert bounding boxes in YOLO format to xmin, ymin, xmax, ymax.
 def yolo2bbox(bboxes):
-    """_summary_
+    """convert yolo coordinate to x and y of two points
 
     Args:
         bboxes (tuple): _description_
@@ -87,22 +87,22 @@ def plot_box(image, bboxes, labels):
         )
     return image
 
-def plot_circle(image, bboxes, labels):
-    """_summary_
+def plot_circle(image, circles, labels):
+    """plot circle on the image
 
     Args:
-        image (_type_): _description_
-        bboxes (_type_): _description_
-        labels (_type_): _description_
+        image (np.ndarray): input image
+        circles (list): coord of all circles
+        labels (list): labels of all circles
 
     Returns:
-        _type_: _description_
-    """    
+        np.ndarray: the image after plot
+    """
     # Need the image height and width to denormalize
     # the bounding box coordinates
     h, w, _ = image.shape
     assert h == w, 'Only support square imagaes !!!'
-    for box_num, box in enumerate(bboxes):
+    for box_num, box in enumerate(circles):
         x, y, r, _ = box
         # denormalize the coordinates
         x = int(x*w)
