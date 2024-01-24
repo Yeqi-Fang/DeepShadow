@@ -1,10 +1,6 @@
 import numpy as np
-
 import MegaScreen as M
 from scipy.fftpack import fft
-
-
-
 import warnings
 
 
@@ -14,16 +10,6 @@ def Sum2d(a):
     """"Sum over the rightmost two dimensions of an array of dimension >= 2"""
     return (np.sum(np.sum(a, -1), -1))
 
-
-def fried_parameter_cm(wavelength, arcseconds_of_seeing_500nm=1., zenith_angle_deg=0.):
-    """return Fried parameter r0 in cm calculation taken from DFB Practical optical interferometry p58. 
-    Find constant of proportionality k using given r0=10cm at 500nm for 1 arcsecond seeing @500nm"""
-    r0_500nm_cm = (500e-9/(arcseconds_of_seeing_500nm*(np.pi/(180*3600))))*100
-    k = r0_500nm_cm/(500e-9)**(6./5)
-    r00 = k*wavelength**(6./5.)
-    zenith_angle_rad = np.radians(zenith_angle_deg)
-    r0z = r00 * np.cos(zenith_angle_rad)**(3/5.)  # p60 DFB POI
-    return r0z
 
 
 def Circ_Aperture_Mask(propagator_size):

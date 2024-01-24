@@ -9,49 +9,38 @@ from scipy import interpolate
 
 
 class TelescopeSimulator():
-    def __init__(self, input_image, telescope_diameter_m, telescope_focal_length_m,
-                 seeing_arcsec_500nm, zenith_angle_deg, atmosphere, wavelength, CCD_pixel_size,
-                 CCD_pixel_count, Num_psfs_to_gen, pixels_per_ro, show=True):
+    def __init__(self, input_image, telescope_diameter_m, telescope_focal_length_m, wavelength,
+                 angular_pixel_size_input_image, CCD_pixel_size, CCD_pixel_count, show=True):
         """ 
         
         Modeling optical telescope imaging, including optical diffraction and atmospheric scattering effects
 
         Args:
-            input_image (str or numpy.ndarray): _description_
+            input_image (str or numpy.ndarray): if str, read the img, if array, use it directly.
             telescope_diameter_m (float):  in meters
             telescope_focal_length_m (float): in arcseconds
-            seeing_arcsec_500nm (float): 
-            zenith_angle_deg (float): in deg, zero being at the zenith
-            atmosphere (bool): True or False, if True simulates atmospheric perturbations. If False simulates purely diffraction effects
             wavelength (float): 
             CCD_pixel_size (float): The pixel width of your simulated CCD
             CCD_pixel_count (int): _description_
-            Num_psfs_to_gen (int): number of psfs (and in turn output images) the run will generate
-            pixels_per_ro (int): how well you wish to sample your phase screen
             show (bool): True or False, if True shows the psf and phase screen
         """
-
+        # parameters
         self.telescope_diameter_m = telescope_diameter_m
         self.telescope_focal_length_m = telescope_focal_length_m
-        self.seeing_arcsec_500nm = seeing_arcsec_500nm
-        self.zenith_angle_deg = zenith_angle_deg
-        self.atmosphere = atmosphere
         self.wavelength = wavelength
         self.CCD_pixel_size = CCD_pixel_size
         self.CCD_pixel_count = CCD_pixel_count
-        self.Num_psfs_to_gen = Num_psfs_to_gen
-        self.pixels_per_ro = pixels_per_ro
-
+        self.angular_pixel_size_input_image = angular_pixel_size_input_image
+        # calculation
         self.image_arr = self.get_image(input_image, show=show)
-        
-        self.angular_pixel_size_input_image = 206265 / telescope_focal_length_m * CCD_pixel_size * CCD_pixel_count / self.image_arr.shape[0]
+        print(self.image_arr.shape)
+        # self.angular_pixel_size_input_image = 206265 / telescope_focal_length_m * CCD_pixel_size * CCD_pixel_count / self.image_arr.shape[0]
+        # print(self.angular_pixel_size_input_image)
         self.pixel_size_input_image = utils.angular_to_physical_pixels(self.angular_pixel_size_input_image, telescope_focal_length_m)
-        
         self.intensity = self.get_intensity(self.image_arr, show=show)
         self.convolved_array = self.get_convolved_image(self.image_arr, self.intensity, show=show)
         
-        
-        
+
     def get_physical_parameters(self):
         theta = 1.22 * wavelength / telescope_diameter_m  # in radians
         T = 2.898e-3 / wavelength
@@ -114,8 +103,8 @@ class TelescopeSimulator():
 
         ideal_pixel_size_pupil = (self.wavelength*self.telescope_focal_length_m) / (len(im_array)*self.pixel_size_input_image)
         Pixel_size_pupil_plane = ideal_pixel_size_pupil
-        telescope_aperture_width_pixels = int(telescope_diameter_m / Pixel_size_pupil_plane)
-        pixel_size_psf_image_plane = (wavelength*telescope_focal_length_m)/(len(im_array)*Pixel_size_pupil_plane) #term in denominator is the gridwidth in the pupil plane, image plane psf MUST NOT be cropped Verified this is correct!
+        telescope_aperture_width_pixels = int(self.telescope_diameter_m / Pixel_size_pupil_plane)
+        pixel_size_psf_image_plane = (self.wavelength*self.telescope_focal_length_m)/(len(im_array)*Pixel_size_pupil_plane) #term in denominator is the gridwidth in the pupil plane, image plane psf MUST NOT be cropped Verified this is correct!
 
 
         phase_screen = np.zeros((telescope_aperture_width_pixels, telescope_aperture_width_pixels), dtype=np.complex64)
@@ -203,32 +192,22 @@ class TelescopeSimulator():
 
 
 
-
 if __name__ == '__main__':
     # physical parameters
     input_image = r"./stars/BHs.png"
     telescope_diameter_m = 6.5  # in meters
     telescope_focal_length_m = 131.4  # in meters
-    seeing_arcsec_500nm = .015  # in arcseconds
-    zenith_angle_deg = 0  # in deg, zero being at the zenith
-    atmosphere = False  # True or False, if True simulates atmospheric perturbations. If False simulates purely diffraction effects
-    wavelength = 50e-9  # in meters
-    CCD_pixel_size = 6e-5  # in meters
-    CCD_pixel_count = 1000  # The pixel width of your simulated CCD
-    # simulation parameters
-    Num_psfs_to_gen = 10# number of psfs (and in turn output images) the run will generate
-    pixels_per_ro = 30  # how well you wish to sample your phase screen
+    wavelength = 2000e-9  # in meters
+    CCD_pixel_size = 2e-6  # in meters
+    CCD_pixel_count = 700  # The pixel width of your simulated CCD
     show = True
-    
+    pixel_size_input_image = 0.0154857
     
     img = Image.open(input_image)
     im_array = np.asarray(img)
-    
     telescope_simulator = TelescopeSimulator(im_array, telescope_diameter_m,telescope_focal_length_m,
-        seeing_arcsec_500nm, zenith_angle_deg, atmosphere, wavelength, CCD_pixel_size,
-        CCD_pixel_count, Num_psfs_to_gen, pixels_per_ro, show
+        wavelength, pixel_size_input_image, CCD_pixel_size,CCD_pixel_count, show
     )
-    
-    # image_arr = telescope_simulator.get_image(input_image=input_image)
 
-    telescope_simulator.generate_image(r'Telescope_Simulator-master/output_images/psf.png', show=True)
+    telescope_simulator.generate_image(telescope_simulator.convolved_array, 
+                                       r'stars/conv.png', show=True)
