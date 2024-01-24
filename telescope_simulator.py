@@ -93,7 +93,15 @@ class TelescopeSimulator():
 
 
     def get_intensity(self, im_array, show=True):
-        
+        """_summary_
+
+        Args:
+            im_array (_type_): _description_
+            show (bool, optional): _description_. Defaults to True.
+
+        Returns:
+            intensity image: _description_
+        """        
         pixel_size_input_image = self.pixel_size_input_image
 
         ideal_pixel_size_pupil = (self.wavelength*self.telescope_focal_length_m) / (len(im_array)*self.pixel_size_input_image)
@@ -101,34 +109,11 @@ class TelescopeSimulator():
         telescope_aperture_width_pixels = int(telescope_diameter_m / Pixel_size_pupil_plane)
         pixel_size_psf_image_plane = (wavelength*telescope_focal_length_m)/(len(im_array)*Pixel_size_pupil_plane) #term in denominator is the gridwidth in the pupil plane, image plane psf MUST NOT be cropped Verified this is correct!
 
-        # print("telescope_aperture_width_pixels: ", telescope_aperture_width_pixels)
-
-
-        # pixel_size_psf_image_plane = (wavelength*telescope_focal_length_m)/(len(im_array)*Pixel_size_pupil_plane)
-
 
         phase_screen = np.zeros((telescope_aperture_width_pixels, telescope_aperture_width_pixels), dtype=np.complex64)
         complex_amplitude = utils.quick_complex_pupil(phase_screen, array_to_propgate_size=len(im_array[0]))
         intensity_image = utils.Focus_beam(complex_amplitude)
 
-
-        # intensity_image.min(), intensity_image.max()
-
-        # plt.imshow(signal.convolve(im_array, intensity_image))
-
-
-
-        # x_psf_samples = np.linspace(-pixel_size_psf_image_plane*len(intensity_image)/2, pixel_size_psf_image_plane*len(intensity_image)/2, len(intensity_image))
-        # y_psf_samples = np.linspace(-pixel_size_psf_image_plane*len(intensity_image)/2, pixel_size_psf_image_plane*len(intensity_image)/2, len(intensity_image))
-
-        # f = interpolate.interp2d(x_psf_samples, y_psf_samples, intensity_image, kind='cubic')
-
-        # x_input_image = np.linspace(-pixel_size_input_image*len(im_array)/2, pixel_size_input_image*len(im_array)/2, len(im_array))
-        # y_input_image = np.linspace(-pixel_size_input_image*len(im_array)/2, pixel_size_input_image*len(im_array)/2, len(im_array))
-
-        # resampled_psf = f(x_input_image, y_input_image)
-        # intensity_image = resampled_psf
-        
         
         x_psf_samples = np.linspace(-pixel_size_psf_image_plane*len(intensity_image)/2, pixel_size_psf_image_plane*len(intensity_image)/2, len(intensity_image))
         y_psf_samples = np.linspace(-pixel_size_psf_image_plane*len(intensity_image)/2, pixel_size_psf_image_plane*len(intensity_image)/2, len(intensity_image))
@@ -149,7 +134,16 @@ class TelescopeSimulator():
         return intensity_image
 
     def get_convolved_image(self, im_array, intensity_image, show=True):
-        
+        """_summary_
+
+        Args:
+            im_array (np.array): _description_
+            intensity_image (np.array): _description_
+            show (bool, optional): _description_. Defaults to True.
+
+        Returns:
+            np.array: image after convolving
+        """        
         convolved_array_shape = np.shape(signal.convolve(im_array, intensity_image*(1/np.max(intensity_image)))) #this line carries out a test convolution to get the shape of the convolved arrays for the variable convolved_array
 
         convolved_array = np.zeros((convolved_array_shape[0],convolved_array_shape[1])) 
@@ -165,7 +159,16 @@ class TelescopeSimulator():
         return convolved_array
     
     def generate_image(self, convolved_array, out_dir, show=True):
-        
+        """_summary_
+
+        Args:
+            convolved_array (np.array): images after convolving.
+            out_dir (str): _description_
+            show (bool, optional): _description_. Defaults to True.
+
+        Returns:
+            np.array: final output image
+        """        
         CCD_pixel_size = self.CCD_pixel_size
         CCD_pixel_count = self.CCD_pixel_count
         pixel_size_input_image = self.pixel_size_input_image
@@ -183,13 +186,7 @@ class TelescopeSimulator():
 
         output_image = np.uint8((output_image)*(255/np.max(output_image)))
 
-        # current_directory = os.getcwd()
-        # final_directory = os.path.join(current_directory, r'output_images_2')
-        # if not os.path.exists(final_directory):
-            # os.makedirs(final_directory)
-        # os.chdir(final_directory)
         imageio.imwrite(out_dir, output_image)
-        # os.chdir(current_directory)
         if show:
             plt.imshow(output_image)
             plt.show()
