@@ -63,7 +63,15 @@ class TelescopeSimulator():
 
 
     def get_image(self, input_image, show=True):
-        
+        """_summary_
+
+        Args:
+            input_image (np.ndarray): (size, size) balck and white
+            show (bool, optional): _description_. Defaults to True.
+
+        Returns:
+            np.ndarray: _description_
+        """        
         if type(input_image) == str:
             # open image to convolve
             im = Image.open(input_image)
