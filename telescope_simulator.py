@@ -63,7 +63,15 @@ class TelescopeSimulator():
 
 
     def get_image(self, input_image, show=True):
-        
+        """_summary_
+
+        Args:
+            input_image (np.ndarray): (size, size) balck and white
+            show (bool, optional): _description_. Defaults to True.
+
+        Returns:
+            np.ndarray: _description_
+        """        
         if type(input_image) == str:
             # open image to convolve
             im = Image.open(input_image)
@@ -93,77 +101,63 @@ class TelescopeSimulator():
 
 
     def get_intensity(self, im_array, show=True):
-        
-        
+        """_summary_
+
+        Args:
+            im_array (_type_): _description_
+            show (bool, optional): _description_. Defaults to True.
+
+        Returns:
+            intensity image: _description_
+        """        
+        pixel_size_input_image = self.pixel_size_input_image
 
         ideal_pixel_size_pupil = (self.wavelength*self.telescope_focal_length_m) / (len(im_array)*self.pixel_size_input_image)
-        # print("pixel_size_input_image", self.pixel_size_input_image)
-
-
-        r0_cm = utils.fried_parameter_cm(self.wavelength, arcseconds_of_seeing_500nm=self.seeing_arcsec_500nm, zenith_angle_deg=self.zenith_angle_deg)
-        telescope_aperture_width_pixels = int(np.ceil((self.pixels_per_ro/(r0_cm*0.01))*self.telescope_diameter_m))
-        Pixel_size_pupil_plane = self.telescope_diameter_m/telescope_aperture_width_pixels
-
-
-        # print("telescope_aperture_width_pixels: ", telescope_aperture_width_pixels)
-
-
-        # pixel_size_psf_image_plane = (wavelength*telescope_focal_length_m)/(len(im_array)*Pixel_size_pupil_plane)
+        Pixel_size_pupil_plane = ideal_pixel_size_pupil
+        telescope_aperture_width_pixels = int(telescope_diameter_m / Pixel_size_pupil_plane)
+        pixel_size_psf_image_plane = (wavelength*telescope_focal_length_m)/(len(im_array)*Pixel_size_pupil_plane) #term in denominator is the gridwidth in the pupil plane, image plane psf MUST NOT be cropped Verified this is correct!
 
 
         phase_screen = np.zeros((telescope_aperture_width_pixels, telescope_aperture_width_pixels), dtype=np.complex64)
         complex_amplitude = utils.quick_complex_pupil(phase_screen, array_to_propgate_size=len(im_array[0]))
         intensity_image = utils.Focus_beam(complex_amplitude)
 
+        
+        x_psf_samples = np.linspace(-pixel_size_psf_image_plane*len(intensity_image)/2, pixel_size_psf_image_plane*len(intensity_image)/2, len(intensity_image))
+        y_psf_samples = np.linspace(-pixel_size_psf_image_plane*len(intensity_image)/2, pixel_size_psf_image_plane*len(intensity_image)/2, len(intensity_image))
 
-        # intensity_image.min(), intensity_image.max()
-
-        # plt.imshow(signal.convolve(im_array, intensity_image))
-
-
-
-        # x_psf_samples = np.linspace(-pixel_size_psf_image_plane*len(intensity_image)/2, pixel_size_psf_image_plane*len(intensity_image)/2, len(intensity_image))
-        # y_psf_samples = np.linspace(-pixel_size_psf_image_plane*len(intensity_image)/2, pixel_size_psf_image_plane*len(intensity_image)/2, len(intensity_image))
-
-        # f = interpolate.interp2d(x_psf_samples, y_psf_samples, intensity_image, kind='cubic')
-
-        # x_input_image = np.linspace(-pixel_size_input_image*len(im_array)/2, pixel_size_input_image*len(im_array)/2, len(im_array))
-        # y_input_image = np.linspace(-pixel_size_input_image*len(im_array)/2, pixel_size_input_image*len(im_array)/2, len(im_array))
-
-        # resampled_psf = f(x_input_image, y_input_image)
-        # intensity_image = resampled_psf
+        f = interpolate.interp2d(x_psf_samples, y_psf_samples, intensity_image, kind='cubic')
+        
+        x_input_image = np.linspace(-pixel_size_input_image*len(im_array)/2, pixel_size_input_image*len(im_array)/2, len(im_array))
+        y_input_image = np.linspace(-pixel_size_input_image*len(im_array)/2, pixel_size_input_image*len(im_array)/2, len(im_array))
 
 
-        intensity_image = intensity_image - intensity_image.min()
-        intensity_image /= np.sum(intensity_image)
-
+        resampled_psf = f(x_input_image, y_input_image)
+        intensity_image = resampled_psf
+        
         if show:
             plt.imshow(intensity_image)
             plt.show()
 
-
         return intensity_image
 
     def get_convolved_image(self, im_array, intensity_image, show=True):
+        """_summary_
+
+        Args:
+            im_array (np.array): _description_
+            intensity_image (np.array): _description_
+            show (bool, optional): _description_. Defaults to True.
+
+        Returns:
+            np.array: image after convolving
+        """        
+        convolved_array_shape = np.shape(signal.convolve(im_array, intensity_image*(1/np.max(intensity_image)))) #this line carries out a test convolution to get the shape of the convolved arrays for the variable convolved_array
+
+        convolved_array = np.zeros((convolved_array_shape[0],convolved_array_shape[1])) 
+        convolved_array = signal.convolve(im_array, intensity_image*(1/np.max(intensity_image)))
+        convolved_array = np.uint8((convolved_array)*(254/np.max(convolved_array)))
         
-        convolved_array_shape = np.shape(signal.convolve(im_array, intensity_image))
-
-
-        convolved_array = np.zeros((convolved_array_shape[0], convolved_array_shape[1], 3))
-        # for i in range(0, 3):
-        convolved_array = signal.convolve(im_array, intensity_image, method='auto')
-        convolved_array = np.uint8((convolved_array)*(255/np.max(convolved_array)))
-
-
-        size_conv = convolved_array.shape[0]
-
-
-        interval = (size_conv + 1) // 4
-
-
-        convolved_array = convolved_array[interval:3*interval, interval: 3*interval]
-
-
         # convolved_array.sum() / im_array.sum()
 
         if show:
@@ -172,26 +166,35 @@ class TelescopeSimulator():
         
         return convolved_array
     
-    def generate_image(self, out_dir, show=True):
-        x_psf_samples = np.linspace(-self.pixel_size_input_image*len(self.convolved_array)/2, self.pixel_size_input_image*len(self.convolved_array)/2, len(self.convolved_array))
-        y_psf_samples = np.linspace(-self.pixel_size_input_image*len(self.convolved_array)/2, self.pixel_size_input_image*len(self.convolved_array)/2, len(self.convolved_array))
+    def generate_image(self, convolved_array, out_dir, show=True):
+        """_summary_
 
-        x_CCD = np.linspace(-self.CCD_pixel_size*self.CCD_pixel_count/2,self.CCD_pixel_size*self.CCD_pixel_count/2, self.CCD_pixel_count)
-        y_CCD = np.linspace(-self.CCD_pixel_size*self.CCD_pixel_count/2,self.CCD_pixel_size*self.CCD_pixel_count/2, self.CCD_pixel_count)
+        Args:
+            convolved_array (np.array): images after convolving.
+            out_dir (str): _description_
+            show (bool, optional): _description_. Defaults to True.
 
-        output_image = np.zeros((self.CCD_pixel_count, self.CCD_pixel_count, 3))
-        f = interpolate.interp2d(x_psf_samples, y_psf_samples, self.convolved_array, kind='cubic')
+        Returns:
+            np.array: final output image
+        """        
+        CCD_pixel_size = self.CCD_pixel_size
+        CCD_pixel_count = self.CCD_pixel_count
+        pixel_size_input_image = self.pixel_size_input_image
+        
+        x_psf_samples = np.linspace(-pixel_size_input_image*len(convolved_array)/2, pixel_size_input_image*len(convolved_array)/2, len(convolved_array))
+        y_psf_samples = np.linspace(-pixel_size_input_image*len(convolved_array)/2, pixel_size_input_image*len(convolved_array)/2, len(convolved_array))
+
+        x_CCD = np.linspace(-CCD_pixel_size*CCD_pixel_count/2, CCD_pixel_size*CCD_pixel_count/2, CCD_pixel_count)
+        y_CCD = np.linspace(-CCD_pixel_size*CCD_pixel_count/2, CCD_pixel_size*CCD_pixel_count/2, CCD_pixel_count)
+
+        output_image = np.zeros((CCD_pixel_count,CCD_pixel_count))
+
+        f = interpolate.interp2d(x_psf_samples, y_psf_samples, convolved_array, kind='cubic')
         output_image = f(x_CCD, y_CCD)
+
         output_image = np.uint8((output_image)*(255/np.max(output_image)))
 
-
-        # current_directory = os.getcwd()
-        # final_directory = os.path.join(current_directory, r'output_images_2')
-        # if not os.path.exists(final_directory):
-            # os.makedirs(final_directory)
-        # os.chdir(final_directory)
         imageio.imwrite(out_dir, output_image)
-        # os.chdir(current_directory)
         if show:
             plt.imshow(output_image)
             plt.show()
