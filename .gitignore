@@ -1,5 +1,5 @@
-*.png
-!Telescope_Simulator/**/*
+
+
 *.jpg
 !Telescope_Simulator/**/*
 *.txt
