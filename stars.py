@@ -29,9 +29,9 @@ class BH_stars_img():
         if BHs is None:
             self.BHs_path = BHs_path
             self.BHs= list(np.random.choice(os.listdir(BHs_path), num_BHs))
-        elif type(BHs) == str:
+        elif type(BHs) == str or type(BHs) == np.ndarray:
             self.BHs_path = BHs_path
-            self.BHs= BHs
+            self.BHs= [BHs]
         else:
             raise ValueError
         self.height, self.width = height, width
@@ -159,6 +159,7 @@ class BH_stars_img():
             BH_lst = np.ones((len(self.BHs), 3), dtype=np.float64)
             
         for index, path in enumerate(self.BHs):
+            # print(self.BHs_path + path)
             BHimg = cv2.imread(self.BHs_path + path)
             BHimg = cv2.cvtColor(BHimg, cv2.COLOR_BGR2GRAY)
             BH_size = np.random.randint(low=self.stars_lower_size, high=self.stars_upper_size)
@@ -183,6 +184,7 @@ class BH_stars_img():
         self.stars_BHs_img = np.where(self.stars_BHs_img > 255, 255, self.stars_BHs_img)
         self.stars_BHs_img = np.where(self.stars_BHs_img < 0, 0, self.stars_BHs_img)
         self.BH_lst = BH_lst
+        self.BH_size = BH_size
 
         return self.stars_BHs_img
     def save(self, path):

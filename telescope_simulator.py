@@ -3,9 +3,8 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
-import imageio
 from scipy import interpolate
-
+import cv2
 
 class TelescopeSimulator():
     def __init__(self, input_image, telescope_diameter_m, telescope_focal_length_m, wavelength,
@@ -23,7 +22,7 @@ class TelescopeSimulator():
             CCD_pixel_count (int): number of pixels of the CCD
             show (bool): True or False, if True shows the psf and phase screen
         """
-        
+
         # parameters
         self.telescope_diameter_m = telescope_diameter_m
         self.telescope_focal_length_m = telescope_focal_length_m
@@ -37,7 +36,7 @@ class TelescopeSimulator():
         self.pixel_size_input_image = utils.angular_to_physical_pixels(self.angular_pixel_size_input_image, telescope_focal_length_m)
         self.intensity = self.get_intensity(self.image_arr, show=show)
         self.convolved_array = self.get_convolved_image(self.image_arr, self.intensity, show=show)
-        
+
 
     def get_physical_parameters(self):
         theta = 1.22 * wavelength / telescope_diameter_m  # in radians
@@ -153,7 +152,7 @@ class TelescopeSimulator():
         
         return convolved_array
     
-    def generate_image(self, out_dir, show=True):
+    def generate_image(self, show=True):
         """_summary_
 
         Args:
@@ -183,7 +182,6 @@ class TelescopeSimulator():
 
         output_image = np.uint8((output_image)*(255/np.max(output_image)))
 
-        imageio.imwrite(out_dir, output_image)
         if show:
             plt.imshow(output_image)
             plt.show()
@@ -209,4 +207,5 @@ if __name__ == '__main__':
         wavelength, pixel_size_input_image, CCD_pixel_size,CCD_pixel_count, show
     )
 
-    telescope_simulator.generate_image(telescope_simulator.convolved_array, 'stars/conv.png')
+    output_img = telescope_simulator.generate_image()
+    cv2.imwrite('stars/conv.png')
