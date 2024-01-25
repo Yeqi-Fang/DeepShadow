@@ -6,7 +6,7 @@ import os
 
 class BH_stars_img():
 
-    def __init__(self, BHs_path='../224', height=1000, width=1400, bg_color=33, 
+    def __init__(self, BHs_path='../224', BHs=None, height=1000, width=1400, bg_color=33, 
                  num_stars=200, num_BHs=10, stars_lower_size=10, stars_upper_size=25,
                  BHS_lower_size=10, BH_upper_size=30, shape='rect'):
         """_summary_
@@ -25,9 +25,15 @@ class BH_stars_img():
             shape (str, optional): _description_. Defaults to 'rect'.
         """
         
-        self.BHs_path = BHs_path
         self.num_BHs = num_BHs
-        self.BHs= list(np.random.choice(os.listdir(BHs_path), num_BHs))
+        if BHs is None:
+            self.BHs_path = BHs_path
+            self.BHs= list(np.random.choice(os.listdir(BHs_path), num_BHs))
+        elif type(BHs) == str:
+            self.BHs_path = BHs_path
+            self.BHs= BHs
+        else:
+            raise ValueError
         self.height, self.width = height, width
         self.bg_color = bg_color
         self.num_stars = num_stars
