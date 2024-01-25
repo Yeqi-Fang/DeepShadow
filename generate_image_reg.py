@@ -1,4 +1,4 @@
-
+import subprocess
 import uuid
 from stars import BH_stars_img
 from telescope_simulator import TelescopeSimulator
@@ -36,24 +36,11 @@ f'AS{tele_config["angular_pixel_size_input_image"]}_BHSize{stars_config["BHS_low
 # data_dir = f'stars{num_stars}_BH{num_BHs}_num{num_imgaes}_{shape}_wl{tele_config["wavelength"]:.3e}_D{tele_config["telescope_diameter_m"]:.2f}_F{tele_config["telescope_diameter_m"]}_BHSize{stars_config["BHS_lower_size"]}:{stars_config["BH_upper_size"]}'
 
 
-data_dir
+# !mkdir {data_dir}
+subprocess.call(['mkdir', data_dir])
 
-
-!mkdir {data_dir}
-
-
-SIZE = 300
-# IN_SIZE = 8
-loss_fn = 'mse'
-num_epochs = 50
-BATCH_SIZE = 128
-critical_mae = 30
-DROPOUT_RATE = 0.5
-learning_rate = 1e-3
-weight_decay = 1e-4
 image_directory = '224/'
 csv_dir = "labels.csv"
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 with open(f"{data_dir}/telescope_config.json", "w") as json_file:
@@ -68,49 +55,33 @@ df_val = pd.DataFrame(columns=['images', 'labels'])
 
 
 size_labels = []
+PA_labels = [] # positional angle
 
 
 images = os.listdir(image_directory)
-background = cv2.imread('back ground2.png')
-background = cv2.resize(background, (SIZE, SIZE))
 for i, image_name in tqdm(enumerate(images)):
     if (image_name.split('.')[1] == 'png'):
         # if i == 0:
-            # image_path = image_directory + image_name
-            # image = cv2.imread(image_path, 0)
-            # img64 = cv2.resize(image, (height, width))
-        # print(image_name)
         stars_config['BHs'] = image_name
         img = BH_stars_img(**stars_config)
-        # img.stars_gen()
         img.stars_gen()
-        img.BHs_gen()
+        img.BHs_gen(rotate=True)
         noise_BHs = img.add_noise(img.stars_BHs_img, radius=0)
         tele_config['input_image'] = noise_BHs
         telescope_simulator = TelescopeSimulator(**tele_config)
         output_img = telescope_simulator.generate_image(show=False)
-        
         cv2.imwrite(os.path.join(data_dir, image_name), output_img)
-        # x = np.random.randint(0, background.shape[1] - img64.shape[1])
-        # y = np.random.randint(0, background.shape[0] - img64.shape[0])
-        # new = background.copy()
-        # new[y:y+img64.shape[0], x:x+img64.shape[1]] = img64
-        # label = series[image_name]
-        # dataset.append(np.array(output_img))
         size_labels.append(img.BH_size)
-        # indexes.append(image_name)
-# dataset = np.array(dataset)
-# labels = np.array(labels)
-# indexes = np.array(indexes)
-
+        PA_labels.append(img.angle)
 
 df = pd.read_csv(csv_dir)
 df.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
 df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
 df.set_index('PhotoName', inplace=True)
+df['size'] = size_labels
+df['PA'] = PA_labels
 
-
-df
+df.to_csv(f'{data_dir}/labels.csv')
 
 
 

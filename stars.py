@@ -150,9 +150,9 @@ class BH_stars_img():
         self.stars_BHs_img = self.stars_BHs_img.astype(np.int64)
         self.stars_lst = stars_lst
     
-    def BHs_gen(self):
+    def BHs_gen(self, rotate=False):
         """_summary_
-        """        
+        """
         if self.shape == 'rect':
             BH_lst = np.ones((len(self.BHs), 4), dtype=np.float64)
         elif self.shape == 'circle':
@@ -165,6 +165,13 @@ class BH_stars_img():
             BH_size = np.random.randint(low=self.stars_lower_size, high=self.stars_upper_size)
             BHimg_small = cv2.resize(BHimg, (BH_size, BH_size))
             BHimg_small = BHimg_small.astype(np.float64)
+            if rotate:
+                # rotate the images
+                centerX, centerY = (BH_size // 2, BH_size // 2)
+                angle = np.random.uniform(0, 360)
+                M = cv2.getRotationMatrix2D((centerX, centerY), angle, 1.0)
+                BHimg_small = cv2.warpAffine(BHimg_small, M, (BH_size, BH_size))
+                
             bright_factor = np.random.uniform(0.6, 0.9)
             BHimg_small *= bright_factor
             BHimg_small = BHimg_small.astype(np.int64)
@@ -185,6 +192,7 @@ class BH_stars_img():
         self.stars_BHs_img = np.where(self.stars_BHs_img < 0, 0, self.stars_BHs_img)
         self.BH_lst = BH_lst
         self.BH_size = BH_size
+        self.angle = angle
 
         return self.stars_BHs_img
     def save(self, path):
