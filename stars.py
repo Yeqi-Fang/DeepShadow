@@ -171,7 +171,7 @@ class BH_stars_img():
                 angle = np.random.uniform(0, 360)
                 M = cv2.getRotationMatrix2D((centerX, centerY), angle, 1.0)
                 BHimg_small = cv2.warpAffine(BHimg_small, M, (BH_size, BH_size))
-                
+                self.angle = angle
             bright_factor = np.random.uniform(0.6, 0.9)
             BHimg_small *= bright_factor
             BHimg_small = BHimg_small.astype(np.int64)
@@ -192,7 +192,7 @@ class BH_stars_img():
         self.stars_BHs_img = np.where(self.stars_BHs_img < 0, 0, self.stars_BHs_img)
         self.BH_lst = BH_lst
         self.BH_size = BH_size
-        self.angle = angle
+
 
         return self.stars_BHs_img
     def save(self, path):
