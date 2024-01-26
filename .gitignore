@@ -40,6 +40,8 @@ logs_recognition/*
 !logs_recognition/results.xlsx
 logs_yolo/* 
 !logs_yolo/results.xlsx
+
+tele_datasets/*
 circle/
 yolov5/
 yolov7/
