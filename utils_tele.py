@@ -1,5 +1,4 @@
 import numpy as np
-import MegaScreen as M
 from scipy.fftpack import fft
 import warnings
 
