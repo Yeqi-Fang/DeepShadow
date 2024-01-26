@@ -1,0 +1,7 @@
+path: ../datasets/stars100_BH10_num500
+train: ../train/images
+val: ../validation/images
+
+nc: 2
+
+names: ['star', 'BH']
