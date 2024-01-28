@@ -43,7 +43,6 @@ logs_yolo/*
 
 tele_datasets/*
 circle/
-yolov5/
 yolov7/
 datasets/
 inference/
