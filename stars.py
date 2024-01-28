@@ -239,8 +239,8 @@ class BH_stars_img():
 
 
 if __name__ == '__main__':
-    img = BH_stars_img(BHs_path='224/', num_stars=10, num_BHs=1, stars_lower_size=25, stars_upper_size=35,
-                       BHS_lower_size=25, BH_upper_size=35, height=3072, width=3072, bg_color=0, shape='rect')
+    img = BH_stars_img(BHs_path='tele_datasets/224/', num_stars=0, num_BHs=1, stars_lower_size=25, stars_upper_size=35,
+                       BHS_lower_size=128, BH_upper_size=128, height=700, width=700, bg_color=0, shape='rect')
     img.stars_gen()
     img.save('stars/stars.png')
     noise_stars = img.add_noise(img.stars_BHs_img, radius=7)

@@ -196,11 +196,10 @@ if __name__ == '__main__':
     telescope_diameter_m = 6.5  # in meters
     telescope_focal_length_m = 131.4  # in meters
     wavelength = 2000e-9  # in meters
-    CCD_pixel_size = 2e-6  # in meters
     CCD_pixel_count = 700  # The pixel width of your simulated CCD
-    show = True
-    pixel_size_input_image = 0.0154857
-    
+    show = False
+    pixel_size_input_image = 0.0075
+    CCD_pixel_size =  pixel_size_input_image * telescope_focal_length_m / 206265 # in meters
     img = Image.open(input_image)
     im_array = np.asarray(img)
     telescope_simulator = TelescopeSimulator(im_array, telescope_diameter_m,telescope_focal_length_m,
@@ -208,4 +207,6 @@ if __name__ == '__main__':
     )
 
     output_img = telescope_simulator.generate_image()
-    cv2.imwrite('stars/conv.png')
+    # import datetime
+    # now = datetime.datetime.time()
+    cv2.imwrite(f'stars/conv{pixel_size_input_image}.png', output_img)
