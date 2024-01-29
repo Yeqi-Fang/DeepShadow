@@ -160,8 +160,13 @@ class BH_stars_img():
             
         for index, path in enumerate(self.BHs):
             # print(self.BHs_path + path)
-            BHimg = cv2.imread(self.BHs_path + path)
-            BHimg = cv2.cvtColor(BHimg, cv2.COLOR_BGR2GRAY)
+            if type(path) == str:
+                BHimg = cv2.imread(self.BHs_path + path)
+                BHimg = cv2.cvtColor(BHimg, cv2.COLOR_BGR2GRAY)
+            elif type(path) == np.ndarray:
+                BHimg = path
+            else:
+                raise ValueError
             BH_size = np.random.randint(low=self.BHS_lower_size, high=self.BH_upper_size)
             BHimg_small = cv2.resize(BHimg, (BH_size, BH_size))
             BHimg_small = BHimg_small.astype(np.float64)
@@ -239,7 +244,9 @@ class BH_stars_img():
 
 
 if __name__ == '__main__':
-    img = BH_stars_img(BHs_path='tele_datasets/224/', num_stars=0, num_BHs=1, stars_lower_size=25, stars_upper_size=35,
+
+    img_arr = cv2.imread('tele_datasets/224/20240108150459_4eae584618014ddca128ea99277295e2.png', 0)
+    img = BH_stars_img(BHs_path='tele_datasets/224/', BHs=img_arr, num_stars=0, num_BHs=1, stars_lower_size=25, stars_upper_size=35,
                        BHS_lower_size=256, BH_upper_size=257, height=700, width=700, bg_color=0, shape='rect')
     img.stars_gen()
     img.save('stars/stars.png')
