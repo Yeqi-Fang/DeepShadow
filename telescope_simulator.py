@@ -198,7 +198,7 @@ if __name__ == '__main__':
     wavelength = 2000e-9  # in meters
     CCD_pixel_count = 700  # The pixel width of your simulated CCD
     show = False
-    pixel_size_input_image = 0.0075
+    pixel_size_input_image = 0.002
     CCD_pixel_size =  pixel_size_input_image * telescope_focal_length_m / 206265 # in meters
     img = Image.open(input_image)
     im_array = np.asarray(img)
