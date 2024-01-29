@@ -31,11 +31,10 @@ share/python-wheels/
 .installed.cfg
 *.egg
 
-
+yolov5/
 224/
 logs_classification/*
 !logs_classification/results.xlsx
-
 logs_recognition/*
 !logs_recognition/results.xlsx
 logs_yolo/* 
