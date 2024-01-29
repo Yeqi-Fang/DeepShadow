@@ -162,7 +162,7 @@ class BH_stars_img():
             # print(self.BHs_path + path)
             BHimg = cv2.imread(self.BHs_path + path)
             BHimg = cv2.cvtColor(BHimg, cv2.COLOR_BGR2GRAY)
-            BH_size = np.random.randint(low=self.stars_lower_size, high=self.stars_upper_size)
+            BH_size = np.random.randint(low=self.BHS_lower_size, high=self.BH_upper_size)
             BHimg_small = cv2.resize(BHimg, (BH_size, BH_size))
             BHimg_small = BHimg_small.astype(np.float64)
             if rotate:
@@ -240,7 +240,7 @@ class BH_stars_img():
 
 if __name__ == '__main__':
     img = BH_stars_img(BHs_path='tele_datasets/224/', num_stars=0, num_BHs=1, stars_lower_size=25, stars_upper_size=35,
-                       BHS_lower_size=128, BH_upper_size=128, height=700, width=700, bg_color=0, shape='rect')
+                       BHS_lower_size=256, BH_upper_size=257, height=700, width=700, bg_color=0, shape='rect')
     img.stars_gen()
     img.save('stars/stars.png')
     noise_stars = img.add_noise(img.stars_BHs_img, radius=7)
