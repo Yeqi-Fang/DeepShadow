@@ -1,7 +1,6 @@
 *.jpg
 !Telescope_Simulator/**/*
 *.txt
-*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
