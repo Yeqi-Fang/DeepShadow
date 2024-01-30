@@ -30,8 +30,9 @@ share/python-wheels/
 .installed.cfg
 *.egg
 
-yolov5/
+
 224/
+
 logs_classification/*
 !logs_classification/results.xlsx
 logs_recognition/*
@@ -45,3 +46,4 @@ yolov7/
 datasets/
 inference/
 .DB_Store
+yolov5/*
