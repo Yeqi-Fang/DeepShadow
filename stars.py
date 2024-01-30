@@ -160,7 +160,9 @@ class BH_stars_img():
             
         for index, path in enumerate(self.BHs):
             # print(self.BHs_path + path)
-            if type(path) == str:
+            # print(path)
+            # print(type(path))
+            if type(path) == str or type(path) == np.str_:
                 BHimg = cv2.imread(self.BHs_path + path)
                 BHimg = cv2.cvtColor(BHimg, cv2.COLOR_BGR2GRAY)
             elif type(path) == np.ndarray:
