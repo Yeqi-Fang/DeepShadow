@@ -27,7 +27,7 @@ from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDis
 from sklearn.model_selection import train_test_split
 
 
-angular_pixel_size_input_images = [4e-4]
+angular_pixel_size_input_images = [1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
 
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
     num_imgaes = 500
@@ -243,6 +243,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     step = 1
     mae_glo = 100
 
+    name = f"{curr_models}/final.pth.tar"
 
     for epoch in range(1, num_epochs + 1):
         train_loss = 0
@@ -292,9 +293,9 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     save_checkpoint(checkpoint, filename=f"{curr_models}/final.pth.tar")
 
 
-    best_model = os.listdir(curr_models)[-2]
-    path_of_best_model = os.path.join(curr_models, best_model)
-    model.load_state_dict(torch.load(path_of_best_model)['state_dict'])
+    # best_model = name
+    # path_of_best_model = os.path.join(curr_models, best_model)
+    model.load_state_dict(torch.load(name)['state_dict'])
 
 
     test_data_size = len(test_dataset)
