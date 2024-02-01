@@ -27,9 +27,10 @@ from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDis
 from sklearn.model_selection import train_test_split
 
 
-angular_pixel_size_input_images = [1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
+angular_pixel_size_input_images = [9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4]
 
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
+    print(f'starting ----------------------{angular_pixel_size_input_image:.3e}')
     num_imgaes = 500
     height = 1024
     width = 1024
@@ -243,6 +244,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     step = 1
     mae_glo = 100
 
+    df = pd.DataFrame({'epoch':[], 'train loss':[], 'test loss':[], 'test mae':[]})
+    df.to_csv(f'{curr_logs}/results.csv')
     name = f"{curr_models}/final.pth.tar"
 
     for epoch in range(1, num_epochs + 1):
@@ -284,6 +287,9 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
             save_checkpoint(checkpoint, filename=name)
         writer.add_scalars("result/losses", {"train_loss": train_loss, "test_loss": test_loss}, step)
         writer.add_scalar("result/MAE", test_mae, step)
+        df_temp = pd.DataFrame({'epoch':[epoch], 'train loss':[train_loss],
+                                'test loss':[test_loss], 'test mae':[test_mae]})
+        df_temp.to_csv(f'{curr_logs}/results.csv', mode='a', header=False)
         step += 1
     print(f'Finally best mae:{mae_glo:.3f}')
     writer.close()

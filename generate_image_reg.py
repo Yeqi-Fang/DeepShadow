@@ -128,7 +128,10 @@ def generate_image_reg_func(angular_pixel_size_input_image):
 
 if __name__ == '__main__':
     # [6e-4, 7e-4, 8e-4, 9e-4, 10e-4, 11e-4, 12e-4, 13e-4]
-    angular_pixel_size_input_images = [1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
+    # [1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
+    # [1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4]
+    # [9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4]
+    angular_pixel_size_input_images = [15.5e-4, 16e-4, 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4]
     t1 = time.perf_counter()
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(generate_image_reg_func, angular_pixel_size_input_images)
