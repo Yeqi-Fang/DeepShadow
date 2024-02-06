@@ -1,4 +1,3 @@
-
 import os
 import cv2
 import glob
@@ -26,11 +25,14 @@ from torch.utils.tensorboard import SummaryWriter
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 
+
+
 def angle_loss(output, target):
-    output_angle = output * torch.pi / 180
-    target_angle = target * torch.pi / 180
-    loss = torch.mean((torch.cos(output_angle) - torch.cos(target_angle))**2 + \
-                      (torch.sin(output_angle) - torch.sin(target_angle))**2)
+    # output_angle = output * torch.pi / 180
+    # target_angle = target * torch.pi / 180
+    # loss = torch.mean((torch.cos(output_angle) - torch.cos(target_angle))**2 + \
+    #                   (torch.sin(output_angle) - torch.sin(target_angle))**2)
+    loss = torch.mean(torch.min(torch.abs(output - target), torch.abs(360 + output - target)))
     return loss
 
 
@@ -48,7 +50,7 @@ D = 6.5
 F = 131.4
 SIZE = 240
 # IN_SIZE = 8
-loss_fn = 'mse'
+loss_fn = 'angle' # angle
 num_epochs = 100
 BATCH_SIZE = 256
 inc_c = 30
