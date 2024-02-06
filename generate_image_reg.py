@@ -82,7 +82,7 @@ def generate_image_reg_func(angular_pixel_size_input_image):
     df = pd.read_csv(csv_dir)
     df.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
     df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
-    # df.set_index('PhotoName', inplace=True)
+    df.set_index('PhotoName', inplace=True)
 
 
     images = os.listdir(image_directory)
@@ -118,8 +118,8 @@ def generate_image_reg_func(angular_pixel_size_input_image):
                 xl, xr, yl, yr = x - 120, x + 120, y - 120, y + 120
                 new = output_img[yl: yr, xl: xr]
                 cv2.imwrite(os.path.join(data_dir, image_name), new)
-                df.loc[i, 'size'] = img.BH_size
-                df.loc[i, 'PA'] = img.angle
+                df.loc[image_name, 'size'] = img.BH_size
+                df.loc[image_name, 'PA'] = img.angle
                 df.to_csv(f'{data_dir}/labels.csv')
 
 
