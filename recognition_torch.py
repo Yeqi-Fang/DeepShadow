@@ -26,24 +26,50 @@ from torch.utils.tensorboard import SummaryWriter
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 
+def angle_loss(output, target):
+    output_angle = output * torch.pi / 180
+    target_angle = target * torch.pi / 180
+    loss = torch.mean((torch.cos(output_angle) - torch.cos(target_angle))**2 + \
+                      (torch.sin(output_angle) - torch.sin(target_angle))**2)
+    return loss
 
-angular_pixel_size_input_images = [9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4]
-paras  = ['size', 'PA']
+
+angular_pixel_size_input_images = [15e-4]
+paras  = ['PA']
+
+num_imgaes = 500
+height = 1024
+width = 1024
+shape = 'rect'
+BH_lower = 64
+BH_upper = 75
+wl = 100e-9
+D = 6.5
+F = 131.4
+SIZE = 240
+# IN_SIZE = 8
+loss_fn = 'mse'
+num_epochs = 100
+BATCH_SIZE = 256
+inc_c = 30
+DROPOUT_RATE = 0.5
+learning_rate = 1e-3
+weight_decay = 1e-4
 
 
 
 for para in paras:
     for angular_pixel_size_input_image in angular_pixel_size_input_images:
+        if para == 'Inclination':
+            critical_mae = 25
+        elif para == 'size':
+            critical_mae = 4
+        elif para == 'PA':
+            critical_mae = 50
+        else:
+            raise ValueError
         print(f'starting ----------------------{angular_pixel_size_input_image:.3e}')
-        num_imgaes = 500
-        height = 1024
-        width = 1024
-        shape = 'rect'
-        BH_lower = 64
-        BH_upper = 75
-        wl = 100e-9
-        D = 6.5
-        F = 131.4
+
         # angular_pixel_size_input_image = 4e-4
 
 
@@ -77,15 +103,7 @@ for para in paras:
         curr_logs = f'logs_recognition/{para}/{date_string}/logs'
 
 
-        SIZE = 240
-        # IN_SIZE = 8
-        loss_fn = 'mse'
-        num_epochs = 10
-        BATCH_SIZE = 256
-        critical_mae = 30
-        DROPOUT_RATE = 0.5
-        learning_rate = 1e-3
-        weight_decay = 1e-4
+
         writer = SummaryWriter(f"{curr_dir}/logs")
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         csv_dir = f"{data_dir}/labels.csv"
@@ -102,13 +120,15 @@ for para in paras:
         df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
         df.set_index('PhotoName', inplace=True)
         series = df[para]
-        # series
+        inclination = df['Inclination']
 
 
         images = os.listdir(data_dir)
         for i, image_name in tqdm(enumerate(images)):
             if (image_name.split('.')[1] == 'png'):
                 # if i == 0:
+                if para == 'PA' and np.abs(inclination[image_name]) > inc_c :
+                    continue
                 image_path = os.path.join(data_dir, image_name)
                 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
                 # image = cv2.resize(image, (SIZE, SIZE))
@@ -133,7 +153,7 @@ for para in paras:
         # dataset = np.array(dataset)
         # labels = np.array(labels)
         # indexes = np.array(indexes)
-
+        # print(len(dataset))
 
 
 
@@ -235,6 +255,8 @@ for para in paras:
             criterion = nn.MSELoss()
         elif loss_fn == 'mae':
             criterion = nn.L1Loss()
+        elif loss_fn == 'angle':
+            criterion = angle_loss
         optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
         scaler = torch.cuda.amp.GradScaler()
         scheduler = StepLR(optimizer, step_size=10, gamma=0.2)
@@ -358,7 +380,7 @@ for para in paras:
         elif para == 'size':
             total_range = 11
         elif para == 'PA':
-            tetal_range = 360
+            total_range = 360
 
         
         col =[]
@@ -389,8 +411,8 @@ for para in paras:
         plt.plot(plot_range, plot_range, 'red', lw=2.5)
 
         # Label the axes and title the plot
-        plt.xlabel("Preded Angle/Degree")
-        plt.ylabel("Real Angle/Degree")
+        plt.xlabel(f"Predicted {para}")
+        plt.ylabel(f"Real {para}")
         plt.xlim(*plot_range)
         plt.ylim(*plot_range)
         # plt.title("Linear Regression")
