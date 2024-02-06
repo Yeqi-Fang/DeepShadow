@@ -1,0 +1,259 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 13.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      9076,        249]
+NotebookOptionsPosition[      8720,        235]
+NotebookOutlinePosition[      9122,        251]
+CellTagsIndexPosition[      9079,        248]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+     "generate", " ", "a", " ", "random", " ", "unit", " ", "vector", " ", 
+      "following", " ", "the", " ", "Dimroth"}], "-", 
+     RowBox[{"Watson", " ", "distribution"}]}], ",", 
+    RowBox[{"girdle", " ", "case"}]}], "*)"}], 
+  RowBox[{
+   RowBox[{
+    RowBox[{"dimrothWatsonRandom", "[", 
+     RowBox[{
+      RowBox[{"\[Mu]_", "?", "VectorQ"}], ",", 
+      RowBox[{"\[Kappa]_", "/;", 
+       RowBox[{
+        RowBox[{"NumericQ", "[", "\[Kappa]", "]"}], "&&", 
+        RowBox[{"Negative", "[", "\[Kappa]", "]"}]}]}]}], "]"}], ":=", 
+    RowBox[{"Module", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"c", ",", "d", ",", "u", ",", "v", ",", "w"}], "}"}], ",", 
+      RowBox[{
+       RowBox[{"c", "=", 
+        RowBox[{"Sqrt", "[", 
+         RowBox[{"-", "\[Kappa]"}], "]"}]}], ";", 
+       RowBox[{"d", "=", 
+        RowBox[{"ArcTan", "[", "c", "]"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"While", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"u", ",", "v"}], "}"}], "=", 
+          RowBox[{"RandomReal", "[", 
+           RowBox[{"1", ",", "2"}], "]"}]}], ";", 
+         RowBox[{"w", "=", 
+          RowBox[{
+           RowBox[{"Tan", "[", 
+            RowBox[{"d", " ", "u"}], "]"}], "/", "c"}]}], ";", 
+         "\[IndentingNewLine]", 
+         RowBox[{"v", ">", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"1", "-", 
+             RowBox[{"\[Kappa]", " ", 
+              RowBox[{"w", "^", "2"}]}]}], ")"}], " ", 
+           RowBox[{"Exp", "[", 
+            RowBox[{"\[Kappa]", " ", 
+             RowBox[{"w", "^", "2"}]}], "]"}]}]}]}], "]"}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"RotationTransform", "[", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{"0", ",", "0", ",", "1"}], "}"}], ",", 
+           RowBox[{"Normalize", "[", "\[Mu]", "]"}]}], "}"}], "]"}], "[", 
+        RowBox[{"Append", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"Sqrt", "[", 
+            RowBox[{"1", "-", 
+             RowBox[{"w", "^", "2"}]}], "]"}], " ", 
+           RowBox[{"Normalize", "[", 
+            RowBox[{"RandomVariate", "[", 
+             RowBox[{
+              RowBox[{"NormalDistribution", "[", "]"}], ",", "2"}], "]"}], 
+            "]"}]}], ",", 
+          RowBox[{
+           RowBox[{"RandomChoice", "[", 
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{"-", "1"}], ",", "1"}], "}"}], "]"}], " ", "w"}]}], 
+         "]"}], "]"}]}]}], "]"}]}], "\n", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"BlockRandom", "[", 
+     RowBox[{
+      RowBox[{"SeedRandom", "[", 
+       RowBox[{"2031", ",", 
+        RowBox[{"Method", "->", "\"\<MersenneTwister\>\""}]}], "]"}], ";", 
+      RowBox[{"(*", 
+       RowBox[{"for", " ", "reproducibility"}], "*)"}], 
+      RowBox[{"vecs", "=", 
+       RowBox[{"Table", "[", 
+        RowBox[{
+         RowBox[{"dimrothWatsonRandom", "[", 
+          RowBox[{
+           RowBox[{"Normalize", "[", 
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{"-", "1"}], ",", "0", ",", "1"}], "}"}], "]"}], ",", 
+           RowBox[{"-", "10"}]}], "]"}], ",", 
+         RowBox[{"{", "150", "}"}]}], "]"}]}]}], "]"}], ";"}], 
+   "\[IndentingNewLine]", "\n", 
+   RowBox[{"(*", 
+    RowBox[{
+     RowBox[{"smoothing", " ", "parameter"}], ",", 
+     RowBox[{
+     "automatically", " ", "determined", " ", "by", " ", "maximizing", " ", 
+      "\"\<pseudo-log likelihood\>\""}]}], "*)"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"cc", "=", 
+     RowBox[{"With", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"n", "=", 
+         RowBox[{"Length", "[", "vecs", "]"}]}], "}"}], ",", 
+       RowBox[{"NArgMax", "[", 
+        RowBox[{
+         RowBox[{"Sum", "[", 
+          RowBox[{
+           RowBox[{"Log", "[", 
+            RowBox[{"Total", "[", 
+             RowBox[{"c", " ", 
+              RowBox[{"Csch", "[", "c", "]"}], " ", 
+              RowBox[{
+               RowBox[{"Exp", "[", 
+                RowBox[{"c", " ", 
+                 RowBox[{
+                  RowBox[{"Delete", "[", 
+                   RowBox[{"vecs", ",", "k"}], "]"}], ".", 
+                  RowBox[{"Extract", "[", 
+                   RowBox[{"vecs", ",", "k"}], "]"}]}]}], "]"}], "/", 
+               RowBox[{"(", 
+                RowBox[{"4", " ", "\[Pi]", " ", 
+                 RowBox[{"(", 
+                  RowBox[{"n", "-", "1"}], ")"}]}], ")"}]}]}], "]"}], "]"}], 
+           ",", 
+           RowBox[{"{", 
+            RowBox[{"k", ",", "n"}], "}"}]}], "]"}], ",", "c"}], "]"}]}], 
+      "]"}]}], ";"}], "\n", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"hist", "=", 
+     RowBox[{"With", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"n", "=", 
+         RowBox[{"Length", "[", "vecs", "]"}]}], "}"}], ",", 
+       RowBox[{"Image", "[", 
+        RowBox[{
+         RowBox[{"DensityPlot", "[", 
+          RowBox[{
+           RowBox[{"Total", "[", 
+            RowBox[{"cc", " ", 
+             RowBox[{"Csch", "[", "cc", "]"}], " ", 
+             RowBox[{
+              RowBox[{"Exp", "[", 
+               RowBox[{"cc", " ", 
+                RowBox[{"vecs", ".", 
+                 RowBox[{"{", 
+                  RowBox[{
+                   RowBox[{
+                    RowBox[{"Cos", "[", "\[Theta]", "]"}], " ", 
+                    RowBox[{"Sin", "[", "\[CurlyPhi]", "]"}]}], ",", 
+                   RowBox[{
+                    RowBox[{"Sin", "[", "\[Theta]", "]"}], " ", 
+                    RowBox[{"Sin", "[", "\[CurlyPhi]", "]"}]}], ",", 
+                   RowBox[{"Cos", "[", "\[CurlyPhi]", "]"}]}], "}"}]}]}], 
+               "]"}], "/", 
+              RowBox[{"(", 
+               RowBox[{"4", " ", "\[Pi]", " ", "n"}], ")"}]}]}], "]"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"\[Theta]", ",", 
+             RowBox[{"-", "\[Pi]"}], ",", "\[Pi]"}], "}"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"\[CurlyPhi]", ",", "0", ",", "\[Pi]"}], "}"}], ",", 
+           RowBox[{"AspectRatio", "->", "Automatic"}], ",", 
+           RowBox[{"ColorFunction", "->", "\"\<ThermometerColors\>\""}], ",", 
+           RowBox[{"Frame", "->", "False"}], ",", 
+           RowBox[{"Mesh", "->", "True"}], ",", 
+           RowBox[{"MeshFunctions", "->", 
+            RowBox[{"{", 
+             RowBox[{"#3", "&"}], "}"}]}], ",", 
+           RowBox[{"ImagePadding", "->", "None"}], ",", 
+           RowBox[{"PerformanceGoal", "->", "\"\<Quality\>\""}], ",", 
+           RowBox[{"PlotPoints", "->", "75"}], ",", 
+           RowBox[{"PlotRange", "->", "All"}], ",", 
+           RowBox[{"PlotRangePadding", "->", "None"}]}], "]"}], ",", 
+         RowBox[{"ImageResolution", "->", "256"}]}], "]"}]}], "]"}]}], ";"}], 
+   "\[IndentingNewLine]", "\n", 
+   RowBox[{"(*", 
+    RowBox[{
+    "spherical", " ", "smooth", " ", "density", " ", "histogram", " ", "as", 
+     " ", "texture"}], "*)"}], "\[IndentingNewLine]", 
+   RowBox[{"ParametricPlot3D", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Cos", "[", "\[Theta]", "]"}], " ", 
+        RowBox[{"Sin", "[", "\[CurlyPhi]", "]"}]}], ",", 
+       RowBox[{
+        RowBox[{"Sin", "[", "\[Theta]", "]"}], " ", 
+        RowBox[{"Sin", "[", "\[CurlyPhi]", "]"}]}], ",", 
+       RowBox[{"Cos", "[", "\[CurlyPhi]", "]"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"\[Theta]", ",", 
+       RowBox[{"-", "\[Pi]"}], ",", "\[Pi]"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"\[CurlyPhi]", ",", "0", ",", "\[Pi]"}], "}"}], ",", 
+     RowBox[{"Lighting", "->", "\"\<Neutral\>\""}], ",", 
+     RowBox[{"Mesh", "->", "None"}], ",", 
+     RowBox[{"PlotStyle", "->", 
+      RowBox[{"Texture", "[", "hist", "]"}]}], ",", 
+     RowBox[{"TextureCoordinateFunction", "->", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"#4", ",", "#5"}], "}"}], "&"}], ")"}]}]}], 
+    "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.916222806367235*^9, 
+  3.916222806369236*^9}},ExpressionUUID->"ad15f05e-1517-42ee-b250-\
+f8b39527e26d"]
+},
+WindowSize->{571, 578},
+WindowMargins->{{269, Automatic}, {17, Automatic}},
+FrontEndVersion->"13.0 for Microsoft Windows (64-bit) (December 2, 2021)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"feec982c-1ca1-42cc-b6f5-42208ed1799d"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 8158, 213, 847, "Input",ExpressionUUID->"ad15f05e-1517-42ee-b250-f8b39527e26d"]
+}
+]
+*)
+
+(* End of internal cache information *)
+
