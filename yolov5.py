@@ -1,4 +1,3 @@
-
 import os
 import json
 import glob as glob
@@ -12,7 +11,6 @@ import cv2
 import matplotlib.pyplot as plt
 import subprocess
 import pandas as pd
-%load_ext tensorboard
 now = datetime.datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 os.mkdir(f'logs_yolo/yolov5-{date_string}')
