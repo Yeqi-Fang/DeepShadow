@@ -7,3 +7,6 @@ vecs = coord.ang2vec(lons, lats)   # or better directly: coord.rand_vec(ncrs)
 # the skymap function, the plot will be automatically saved and closed
 log10e = auger.rand_energy_from_auger(n=ncrs, log10e_min=emin)
 skymap.scatter(vecs, c=log10e, opath='isotropic_sky.png')
+
+
+# https://astro.pages.rwth-aachen.de/astrotools/installation.html
