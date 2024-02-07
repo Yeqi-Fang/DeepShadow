@@ -28,13 +28,17 @@ from sklearn.model_selection import train_test_split
 
 
 def angle_loss(output, target):
-    # output_angle = output * torch.pi / 180
-    # target_angle = target * torch.pi / 180
-    # loss = torch.mean((torch.cos(output_angle) - torch.cos(target_angle))**2 + \
-    #                   (torch.sin(output_angle) - torch.sin(target_angle))**2)
+    print(output.shape)
     loss = torch.mean(torch.min(torch.abs(output - target), torch.abs(360 + output - target)))
     return loss
 
+
+def double_angle_loss(output, target):
+    out_inc, target_inc = output[:, 0], target[:, 0]
+    loss1 = torch.mean(torch.abs(out_inc - target_inc))
+    out_PA, target_PA = output[:, 1], target[:, 1]
+    loss2 = torch.mean(torch.min(torch.abs(out_PA - target_PA), torch.abs(360 + out_PA - target_PA)))
+    return loss
 
 angular_pixel_size_input_images = [16.5e-4]
 paras  = ['PA']
@@ -50,10 +54,10 @@ D = 6.5
 F = 131.4
 SIZE = 240
 # IN_SIZE = 8
-loss_fn = 'mse' # angle
-num_epochs = 100
+loss_fn = 'angle' # angle
+num_epochs = 50
 BATCH_SIZE = 256
-inc_c = 30
+inc_c = 91
 DROPOUT_RATE = 0.5
 learning_rate = 1e-3
 weight_decay = 1e-4
@@ -231,7 +235,7 @@ for para in paras:
                 self.fc2 = nn.Linear(in_features=256, out_features=32, bias=True)
                 self.relu3 = nn.ReLU()
                 self.dropout3 = nn.Dropout(p=DROPOUT_RATE)
-                self.fc3 = nn.Linear(in_features=32, out_features=1, bias=True)
+                self.fc3 = nn.Linear(in_features=32, out_features=2, bias=True)
 
             def forward(self, x):
                 out = self.base(x)
@@ -373,7 +377,7 @@ for para in paras:
 
 
         df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
-        df.to_csv(f'{curr_dir}/acc:{mae:.3f}.csv')
+        df.to_csv(f'{curr_dir}/{loss_fn}-{mae:.3f}.csv')
 
 
         # prompt: linear fit xand y and give a plot
