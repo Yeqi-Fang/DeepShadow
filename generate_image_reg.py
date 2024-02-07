@@ -11,7 +11,7 @@ import concurrent.futures
 from pathlib import Path
 
 
-num_imgaes = 100
+num_round = 3
 height = 1024
 width = 1024
 shape = 'rect'
@@ -39,7 +39,7 @@ def generate_image_reg_func(angular_pixel_size_input_image):
 
 
     # /mnt/c/fyq/tele_datasets/
-    data_dir = Path(f'tele_datasets/reg_num{num_imgaes}_{shape}_wl{tele_config["wavelength"]:.3e}_'\
+    data_dir = Path(f'tele_datasets/reg_num{num_round}_{shape}_wl{tele_config["wavelength"]:.3e}_'\
     f'D{tele_config["telescope_diameter_m"]:.2f}_F{tele_config["telescope_focal_length_m"]}_'\
     f'AS{tele_config["angular_pixel_size_input_image"]:.2e}_BHSize{stars_config["BHS_lower_size"]}-{stars_config["BH_upper_size"]}'
     )# data_dir = f'stars{num_stars}_BH{num_BHs}_num{num_imgaes}_{shape}_wl{tele_config["wavelength"]:.3e}_D{tele_config["telescope_diameter_m"]:.2f}_F{tele_config["telescope_diameter_m"]}_BHSize{stars_config["BHS_lower_size"]}:{stars_config["BH_upper_size"]}'
@@ -79,6 +79,7 @@ def generate_image_reg_func(angular_pixel_size_input_image):
             if not img_path.exists():
             # print(os.path.join(data_dir, image_name))
             # print(os.path.exists(os.path.join(data_dir, image_name)))
+                
                 stars_config['BHs'] = image_name
                 img = BH_stars_img(**stars_config)
                 img.stars_gen()
