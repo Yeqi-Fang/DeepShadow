@@ -6,13 +6,13 @@ import datetime
 import torchvision
 import numpy as np
 import pandas as pd
+import healpy as hp
 import torch.nn as nn
 import seaborn as sns
 import torch.optim as optim
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 from stars import BH_stars_img
-from telescope_simulator import TelescopeSimulator
 from tqdm import tqdm
 from math import ceil
 from PIL import Image
@@ -22,6 +22,8 @@ from torch.nn import functional as F
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
+from scipy.interpolate import LinearNDInterpolator
+from telescope_simulator import TelescopeSimulator
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 
@@ -47,15 +49,12 @@ wl = 100e-9
 D = 6.5
 F = 131.4
 SIZE = 240
-# IN_SIZE = 8
-loss_fn = 'mse' # angle
-num_epochs = 100
+num_epochs = 1
 BATCH_SIZE = 256
-inc_c = 30
 DROPOUT_RATE = 0.5
 learning_rate = 1e-3
 weight_decay = 1e-4
-critical_mae = 20
+critical_mae = 50
 
 
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
@@ -66,7 +65,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
 
     tele_config = dict(
         # physical parameters
-        input_image = r"./stars/BHs.png", telescope_diameter_m = 6.5,
+        input_image = "./stars/BHs.png", telescope_diameter_m = 6.5,
         telescope_focal_length_m = 131.4, angular_pixel_size_input_image = angular_pixel_size_input_image,
         wavelength = 100e-9, CCD_pixel_size = angular_pixel_size_input_image * 131.4 / 206265,
         CCD_pixel_count = 1024, show = False,
@@ -85,17 +84,15 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
 
 
     now = datetime.datetime.now()
-    date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
-    os.mkdir(f'logs_recognition/Inclination_PA/{date_string}')
-    os.mkdir(f'logs_recognition/Inclination_PA/{date_string}/models')
-    os.mkdir(f'logs_recognition/Inclination_PA/{date_string}/logs')
-    curr_dir = f'logs_recognition/Inclination_PA/{date_string}'
-    curr_models = f'logs_recognition/Inclination_PA/{date_string}/models'
-    curr_logs = f'logs_recognition/Inclination_PA/{date_string}/logs'
+    date_string = now.strftime(r"%Y-%m-%d_%H-%M-%S")
+    curr_dir = Path(f'logs_recognition/Inclination_PA/{date_string}')
+    curr_models = curr_dir / 'models'
+    curr_logs = curr_dir / 'logs'
+    curr_dir.mkdir()
+    curr_models.mkdir()
+    curr_logs.mkdir()
 
-
-
-    writer = SummaryWriter(f"{curr_dir}/logs")
+    writer = SummaryWriter(curr_logs)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     csv_dir = f"{data_dir}/labels.csv"
     os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -110,8 +107,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     # df.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
     df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
     df.set_index('PhotoName', inplace=True)
-    PA = df['PA']
-    inclination = df['Inclination']
+    PA_series = df['PA']
+    inclination_series = df['Inclination']
 
 
     images = os.listdir(data_dir)
@@ -120,23 +117,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
             # if i == 0:
             image_path = os.path.join(data_dir, image_name)
             image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-            # image = cv2.resize(image, (SIZE, SIZE))
-            # print(image_name)
-            # stars_config['BHs'] = image_name
-            # img = BH_stars_img(**stars_config)
-            # img.stars_gen()
-            # img.stars_gen()
-            # img.BHs_gen()
-            # noise_BHs = img.add_noise(img.stars_BHs_img, radius=0)
-            # tele_config['input_image'] = noise_BHs
-            # telescope_simulator = TelescopeSimulator(**tele_config)
-            # output_img = telescope_simulator.generate_image(show=False)
-            # x = np.random.randint(0, background.shape[1] - img64.shape[1])
-            # y = np.random.randint(0, background.shape[0] - img64.shape[0])
-            # new = background.copy()
-            # new[y:y+img64.shape[0], x:x+img64.shape[1]] = img64
-            PA = PA[image_name]
-            Inclination = inclination[image_name]
+            PA = PA_series[image_name]
+            Inclination = inclination_series[image_name]
             dataset.append(np.array(image))
             PAs.append(PA)
             Inclinations.append(Inclination)
@@ -187,7 +169,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
 
 
     class CNN(nn.Module):
-        def __init__(self, base):
+        def __init__(self):
             super(CNN, self).__init__()
             base = torchvision.models.efficientnet_b1(weights='EfficientNet_B1_Weights.IMAGENET1K_V1')
             base.classifier[0] = nn.Dropout(p=DROPOUT_RATE, inplace=True)
@@ -334,8 +316,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     mae_glo = 100
 
     df = pd.DataFrame({'epoch':[], 'train loss':[], 'test loss':[], 'test mae':[]})
-    df.to_csv(f'{curr_logs}/results_PA.csv')
-    name = f"{curr_models}/final_PA.pth.tar"
+    df.to_csv(curr_dir / 'results_PA.csv')
+    name = curr_dir / "final_PA.pth.tar"
 
     for epoch in range(1, num_epochs + 1):
         train_loss = 0
@@ -369,7 +351,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         test_loss /= test_batch_size
         print(f"Testing Loss:{test_loss:.4f}\tMAE:{test_mae:.3f}")
         if test_mae < mae_glo and test_mae < critical_mae:
-            name = f"{curr_models}/epoch-{epoch}_MAE-{test_mae:.3f}_PA.pth.tar"
+            name = curr_dir / f"epoch-{epoch}_MAE-{test_mae:.3f}_PA.pth.tar"
             print(f'MAE improve from {mae_glo:.3f} to {test_mae:.3f}, saving model dict to {name}')
             mae_glo = test_mae
             checkpoint = {"state_dict": model2.state_dict(), "optimizer": optimizer.state_dict()}
@@ -422,7 +404,30 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     df = pd.DataFrame({'Pred_inc': pred_inc, 'Pred_PA': pred_PA, 
                        'Real_inc': real_inc, 'Real_PA':real_PA})
     df.to_csv(f'{curr_dir}/acc:{mae:.3f}.csv')
-    
+    err_inc = np.radians(np.abs(pred_inc - real_inc))
+    real_PA = y_full_PA.squeeze()
+    pred_PA = y_pred_full_PA.squeeze()
+    err_PA = np.radians(angle_loss(pred_PA, real_PA).cpu().numpy())
+    error = err_inc + err_PA
+    nside = 32
+    npix = hp.nside2npix(nside)
+    thetas = np.radians(real_inc + 90)
+    thetas[thetas > np.pi] = np.pi
+    phis = np.radians(real_PA.cpu().numpy())
+    fs = error
+    the_phi = np.c_[thetas, phis]
+    lut2 = LinearNDInterpolator(the_phi, fs, fill_value=0.3)
+    N = 500000
+    Theta = np.random.uniform(0, np.pi, N)
+    Phi = np.random.uniform(0, 2*np.pi, N)
+    Fs = lut2(Theta, Phi)
+
+    indices = hp.ang2pix(nside, Theta, Phi)
+    hpxmap = np.zeros(npix, dtype=np.float32)
+    for i in range(N):
+        hpxmap[indices[i]] = Fs[i]
+    hp.mollview(hpxmap)
+    plt.savefig(curr_dir / 'fits.png')
 
 
 
