@@ -31,7 +31,8 @@ from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDis
 
 def angle_loss(output, target):
     # print(output.shape)
-    loss = torch.mean(torch.min(torch.abs(output - target), torch.abs(360 + output - target)))
+    # loss = torch.mean(torch.min(torch.abs(output - target), torch.abs(360 + output - target)))
+    loss = torch.min(torch.abs(output - target), torch.abs(360 + output - target))
     return loss
 
 def angle_loss_np(output, target):
@@ -53,7 +54,7 @@ def double_angle_loss(output, target):
     out_PA, target_PA = output[:, 1], target[:, 1]
     loss2 = torch.mean(torch.min((out_PA - target_PA)**2, (360 + out_PA - target_PA)**2))
     loss3 = torch.mean((out_PA - target_PA)**2)
-    loss = 4 * loss1 + loss2
+    loss = 6 * loss1 + loss2
     return loss
 
 
@@ -483,6 +484,7 @@ for para in paras:
             real_PA = y_full[:, 1].squeeze()
             pred_PA = y_pred_full[:, 1].squeeze()
             err_PA = np.radians(angle_loss(pred_PA, real_PA).cpu().numpy())
+            print(err_PA.shape)
             error = err_inc + err_PA
             # lons, lats= np.radians(real_inc), np.radians(real_PA)
             # ncrs = len(pred_inc)
