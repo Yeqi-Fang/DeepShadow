@@ -137,40 +137,10 @@ for para in paras:
                         continue
                 image_path = os.path.join(data_dir, image_name)
                 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-                # image = cv2.resize(image, (SIZE, SIZE))
-                # print(image_name)
-                # stars_config['BHs'] = image_name
-                # img = BH_stars_img(**stars_config)
-                # img.stars_gen()
-                # img.stars_gen()
-                # img.BHs_gen()
-                # noise_BHs = img.add_noise(img.stars_BHs_img, radius=0)
-                # tele_config['input_image'] = noise_BHs
-                # telescope_simulator = TelescopeSimulator(**tele_config)
-                # output_img = telescope_simulator.generate_image(show=False)
-                # x = np.random.randint(0, background.shape[1] - img64.shape[1])
-                # y = np.random.randint(0, background.shape[0] - img64.shape[0])
-                # new = background.copy()
-                # new[y:y+img64.shape[0], x:x+img64.shape[1]] = img64
                 label = series[image_name]
                 dataset.append(np.array(image))
                 labels.append(label)
                 indexes.append(image_name)
-        # dataset = np.array(dataset)
-        # labels = np.array(labels)
-        # indexes = np.array(indexes)
-        # print(len(dataset))
-        # print(dataset)
-        # print(labels)
-
-
-
-        # img_test = dataset[0]
-        # img_test.shape
-
-
-        # plt.imshow(img_test)
-
 
         x_train, x_test, y_train, y_test = train_test_split(dataset, labels, test_size=0.2, random_state=2024)
         _, _, index_train, index_test = train_test_split(dataset, indexes, test_size=0.2, random_state=2024)
