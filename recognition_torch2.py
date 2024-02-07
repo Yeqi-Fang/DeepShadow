@@ -62,7 +62,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
 
     # angular_pixel_size_input_image = 4e-4
 
-
+    # --------------------------------------------  Configuration ------------------------------------------------
     tele_config = dict(
         # physical parameters
         input_image = "./stars/BHs.png", telescope_diameter_m = 6.5,
@@ -97,7 +97,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     csv_dir = f"{data_dir}/labels.csv"
     os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-
+    # --------------------------------------------  Data Preprocessing ------------------------------------------------
     dataset = []
     PAs = []
     Inclinations = []
@@ -204,7 +204,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
 
-
+    # --------------------------------------------  Inclination ------------------------------------------------
     model1 = CNN()
     model1.to(device)
     loss_fn = nn.MSELoss()
@@ -218,11 +218,11 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     train_batch_size = len(train_loader1)
     test_batch_size = len(test_loader1)
     step = 1
-    mae_glo = 100
+    mae_glo_inc = 100
 
     df = pd.DataFrame({'epoch':[], 'train loss':[], 'test loss':[], 'test mae':[]})
-    df.to_csv(f'{curr_logs}/results_inc.csv')
-    name = f"{curr_models}/final_inc.pth.tar"
+    df.to_csv(curr_logs / 'results_inc.csv', index=False)
+    name = curr_models / "final_inc.pth.tar"
 
     for epoch in range(1, num_epochs + 1):
         train_loss = 0
@@ -255,31 +255,28 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         test_mae /= test_data_size
         test_loss /= test_batch_size
         print(f"Testing Loss:{test_loss:.4f}\tMAE:{test_mae:.3f}")
-        if test_mae < mae_glo and test_mae < critical_mae:
-            name = f"{curr_models}/epoch-{epoch}_MAE-{test_mae:.3f}_inc.pth.tar"
-            print(f'MAE improve from {mae_glo:.3f} to {test_mae:.3f}, saving model dict to {name}')
-            mae_glo = test_mae
+        if test_mae < mae_glo_inc and test_mae < critical_mae:
+            name = curr_models / f"epoch-{epoch}_MAE-{test_mae:.3f}_inc.pth.tar"
+            print(f'MAE improve from {mae_glo_inc:.3f} to {test_mae:.3f}, saving model dict to {name}')
+            mae_glo_inc = test_mae
             checkpoint = {"state_dict": model1.state_dict(), "optimizer": optimizer.state_dict()}
             save_checkpoint(checkpoint, filename=name)
         writer.add_scalars("result/losses", {"train_loss": train_loss, "test_loss": test_loss}, step)
         writer.add_scalar("result/MAE", test_mae, step)
         df_temp = pd.DataFrame({'epoch':[epoch], 'train loss':[train_loss],
                                 'test loss':[test_loss], 'test mae':[test_mae]})
-        df_temp.to_csv(f'{curr_logs}/results_inc.csv', mode='a', header=False)
+        df_temp.to_csv(curr_logs / 'results_inc.csv', mode='a', header=False)
         step += 1
-    print(f'Finally best mae:{mae_glo:.3f}')
+    print(f'Finally best mae:{mae_glo_inc:.3f}')
     writer.close()
 
 
     checkpoint = {"state_dict": model1.state_dict(), "optimizer": optimizer.state_dict()}
-    save_checkpoint(checkpoint, filename=f"{curr_models}/final_inc.pth.tar")
+    save_checkpoint(checkpoint, filename=curr_models / "final_inc.pth.tar")
 
 
-    # best_model = name
-    # path_of_best_model = os.path.join(curr_models, best_model)
+
     model1.load_state_dict(torch.load(name)['state_dict'])
-
-
     test_data_size = len(test_dataset1)
     model1.eval()
 
@@ -301,6 +298,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
 
     model1.train();
 
+    # --------------------------------------------  PA ------------------------------------------------
     model2 = CNN()
     model2.to(device)
     loss_fn = angle_loss
@@ -313,10 +311,10 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     train_batch_size = len(train_loader2)
     test_batch_size = len(test_loader2)
     step = 1
-    mae_glo = 100
+    mae_glo_PA = 100
 
     df = pd.DataFrame({'epoch':[], 'train loss':[], 'test loss':[], 'test mae':[]})
-    df.to_csv(curr_dir / 'results_PA.csv')
+    df.to_csv(curr_dir / 'results_PA.csv', index=False)
     name = curr_dir / "final_PA.pth.tar"
 
     for epoch in range(1, num_epochs + 1):
@@ -338,36 +336,33 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         loop.set_postfix(loss=loss.item())
         train_loss /= train_batch_size
         print(f"Training Loss at epoch {epoch} is {train_loss:.4f}", end='\t')
+
         model2.eval()
-        test_loss, test_mae = 0, 0
+        test_loss = 0
         with torch.no_grad():
             for x, y in test_loader2:
                 x = x.to(device=device)
                 y = y.to(device=device)
                 y_pred = model2(x)
                 test_loss += loss_fn(y_pred, y).item()
-                test_mae += torch.abs(y-y_pred).type(torch.float).sum().item()
-        test_mae /= test_data_size
         test_loss /= test_batch_size
-        print(f"Testing Loss:{test_loss:.4f}\tMAE:{test_mae:.3f}")
-        if test_mae < mae_glo and test_mae < critical_mae:
-            name = curr_dir / f"epoch-{epoch}_MAE-{test_mae:.3f}_PA.pth.tar"
-            print(f'MAE improve from {mae_glo:.3f} to {test_mae:.3f}, saving model dict to {name}')
-            mae_glo = test_mae
+        print(f"Testing Loss and MAE:{test_loss:.4f}")
+        if test_loss < mae_glo_PA and test_loss < critical_mae:
+            name = curr_models / f"epoch-{epoch}_MAE/Loss-{test_loss:.3f}_PA.pth.tar"
+            print(f'MAE improve from {mae_glo_PA:.3f} to {test_loss:.3f}, saving model dict to {name}')
+            mae_glo_PA = test_loss
             checkpoint = {"state_dict": model2.state_dict(), "optimizer": optimizer.state_dict()}
             save_checkpoint(checkpoint, filename=name)
         writer.add_scalars("result/losses", {"train_loss": train_loss, "test_loss": test_loss}, step)
-        writer.add_scalar("result/MAE", test_mae, step)
-        df_temp = pd.DataFrame({'epoch':[epoch], 'train loss':[train_loss],
-                                'test loss':[test_loss], 'test mae':[test_mae]})
-        df_temp.to_csv(f'{curr_logs}/results_PA.csv', mode='a', header=False)
+        df_temp = pd.DataFrame({'epoch':[epoch], 'train loss':[train_loss], 'test loss':[test_loss]})
+        df_temp.to_csv(curr_logs / 'results_PA.csv', mode='a', header=False)
         step += 1
-    print(f'Finally best mae:{mae_glo:.3f}')
+    print(f'Finally best mae:{mae_glo_PA:.3f}')
     writer.close()
 
 
     checkpoint = {"state_dict": model2.state_dict(), "optimizer": optimizer.state_dict()}
-    save_checkpoint(checkpoint, filename=f"{curr_models}/final_PA.pth.tar")
+    save_checkpoint(checkpoint, filename=curr_models / "final_PA.pth.tar")
 
 
     # best_model = name
@@ -388,22 +383,17 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
             y_full_PA = torch.cat((y_full_PA, y), 0)
             y_pred_full_PA = torch.cat((y_pred_full_PA, y_pred), 0)
         loss = loss_fn(y_pred_full_PA, y_full_PA)
-        # test_mae = angle_loss(y_full_PA-y_pred_full_PA)
-
-    # mae = test_mae/test_data_size
     print("整体测试集上的Loss and MAE: {}".format(loss))
-    # print("整体测试集上的MAE: {}".format(test_mae/test_data_size))
-
     model2.train();
 
-
+    # --------------------------------------------  Ploting ------------------------------------------------
     pred_inc = y_pred_full_inc.squeeze().cpu().numpy()
     pred_PA = y_pred_full_PA.squeeze().cpu().numpy()
     real_inc = y_full_inc.squeeze().cpu().numpy()
     real_PA = y_full_PA.squeeze().cpu().numpy()
     df = pd.DataFrame({'Pred_inc': pred_inc, 'Pred_PA': pred_PA, 
                        'Real_inc': real_inc, 'Real_PA':real_PA})
-    df.to_csv(f'{curr_dir}/acc:{mae:.3f}.csv')
+    df.to_csv(curr_dir / f'/acc:{mae:.3f}.csv', index=False)
     err_inc = np.radians(np.abs(pred_inc - real_inc))
     real_PA = y_full_PA.squeeze()
     pred_PA = y_pred_full_PA.squeeze()
@@ -430,12 +420,12 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     plt.savefig(curr_dir / 'fits.png')
 
 
-
+    # --------------------------------------------  Save Results ------------------------------------------------
     a = {
         'Model_name': 'EfficientNet-B1',
-        'MAE': mae_glo,
+        'MAE inc': mae_glo_inc,
+        'MAE PA': mae_glo_PA,
         'Batch_size': BATCH_SIZE,
-        # 'In size': IN_SIZE,
         'Resolution': SIZE,
         'Dropout': DROPOUT_RATE,
         'lr': learning_rate,
@@ -445,7 +435,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         'Loss Function': loss_fn,
         'angular_pixel_size_input_image': angular_pixel_size_input_image,
         'para': 'Inc, PA'
-
     }
     df = pd.read_excel(f'logs_recognition/results.xlsx')
     df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
