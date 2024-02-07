@@ -46,7 +46,7 @@ def double_angle_loss(output, target):
     out_PA, target_PA = output[:, 1], target[:, 1]
     loss2 = torch.mean(torch.min((out_PA - target_PA)**2, (360 + out_PA - target_PA)**2))
     loss3 = torch.mean((out_PA - target_PA)**2)
-    loss = 4 * loss1 + loss2
+    loss = 10 * loss1 + loss2
     return loss
 
 
@@ -71,10 +71,8 @@ wl = 100e-9
 D = 6.5
 F = 131.4
 SIZE = 240
-# IN_SIZE = 8
-
 num_epochs = 50
-BATCH_SIZE = 256
+BATCH_SIZE = 64
 inc_c = 91
 DROPOUT_RATE = 0.5
 learning_rate = 1e-3
@@ -225,11 +223,12 @@ for para in paras:
         test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
 
-        base = torchvision.models.efficientnet_b1(
-            weights='EfficientNet_B1_Weights.IMAGENET1K_V1')
+        base = torchvision.models.efficientnet_b5(
+            weights='EfficientNet_B5_Weights.IMAGENET1K_V1')
         # print(base)
+        # 5, 2048, 0/1, 1280
         base.classifier[0] = nn.Dropout(p=DROPOUT_RATE, inplace=True)
-        base.classifier[1] = nn.Linear(in_features=1280, out_features=256, bias=True)
+        base.classifier[1] = nn.Linear(in_features=2048, out_features=256, bias=True)
 
 
         class CNN(nn.Module):
@@ -390,7 +389,7 @@ for para in paras:
             y_pred_full = torch.tensor([]).to(device=device)
             for x, y in test_loader:
                 x = x.to(device=device)
-                y = y.to(device=device)
+                y = y.to(device=device).squeeze()
                 y_pred = model(x)
                 y_full = torch.cat((y_full, y), 0)
                 y_pred_full = torch.cat((y_pred_full, y_pred), 0)
@@ -418,59 +417,76 @@ for para in paras:
 
         model.train();
 
+        if type(para) == str:
+            df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
+            x = df.Pred
+            y = df.Real
 
-        df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
-        df.to_csv(f'{curr_dir}/{loss_fn}-{mae:.3f}.csv')
+            if para == 'Inclination':
+                total_range = 180
+            elif para == 'size':
+                total_range = 11
+            elif para == 'PA':
+                total_range = 360
 
-
-        # prompt: linear fit xand y and give a plot
-        x = df.Pred
-        y = df.Real
-        # Calculate the slope and intercept of the linear regression line
-        # slope, intercept = np.polyfit(x, y, 1)
-
-        if para == 'Inclination':
-            total_range = 180
-        elif para == 'size':
-            total_range = 11
-        elif para == 'PA':
-            total_range = 360
-
-        
-        col =[]
-        sizes = []
-        for i in range(0, len(x)):
-            distance_to_line = abs(x[i] - y[i])
-            if distance_to_line < total_range / 36: 
-                col.append('blue')
-                sizes.append(70)
-            elif distance_to_line < total_range / 18:
-                col.append('green')
-                sizes.append(40)
-            else: 
-                col.append('magenta')
-                sizes.append(40)
+            
+            col =[]
+            sizes = []
+            for i in range(0, len(x)):
+                distance_to_line = abs(x[i] - y[i])
+                if distance_to_line < total_range / 36: 
+                    col.append('blue')
+                    sizes.append(70)
+                elif distance_to_line < total_range / 18:
+                    col.append('green')
+                    sizes.append(40)
+                else: 
+                    col.append('magenta')
+                    sizes.append(40)
 
 
-        plt.figure(figsize=(7, 7))
-        # Create a line plot of the data points and the linear regression line
-        plt.scatter(x, y, alpha=0.5, s=sizes, color=col)
-        if para == 'Inclination':
-            plot_range = [-91, 91]
-        elif para == 'size':
-            plot_range = [63, 76]
-        elif para == 'PA':
-            plot_range = [-5, 365]
+            plt.figure(figsize=(7, 7))
+            # Create a line plot of the data points and the linear regression line
+            plt.scatter(x, y, alpha=0.5, s=sizes, color=col)
+            if para == 'Inclination':
+                plot_range = [-91, 91]
+            elif para == 'size':
+                plot_range = [63, 76]
+            elif para == 'PA':
+                plot_range = [-5, 365]
 
-        plt.plot(plot_range, plot_range, 'red', lw=2.5)
+            plt.plot(plot_range, plot_range, 'red', lw=2.5)
 
-        # Label the axes and title the plot
-        plt.xlabel(f"Predicted {para}")
-        plt.ylabel(f"Real {para}")
-        plt.xlim(*plot_range)
-        plt.ylim(*plot_range)
-        # plt.title("Linear Regression")
-        plt.savefig(f'{curr_dir}/fit.png', dpi=600)
+            # Label the axes and title the plot
+            plt.xlabel(f"Predicted {para}")
+            plt.ylabel(f"Real {para}")
+            plt.xlim(*plot_range)
+            plt.ylim(*plot_range)
+            # plt.title("Linear Regression")
+            plt.savefig(f'{curr_dir}/fit.png', dpi=600)
+
+        else:
+            pred_inc = y_pred_full[:, 0].squeeze().cpu().numpy()
+            pred_PA = y_pred_full[:, 1].squeeze().cpu().numpy()
+            real_inc = y_full[:, 0].squeeze().cpu().numpy()
+            real_PA = y_full[:, 1].squeeze().cpu().numpy()
+            df = pd.DataFrame({'Pred_inc': pred_inc, 'Pred_PA': pred_PA, 
+                               'Real_inc': real_inc, 'Real_PA':real_PA})
+            err_inc = np.radians(np.abs(pred_inc - real_inc))
+            err_PA = np.radians(np.abs(pred_PA - real_PA))
+            error = err_inc + err_PA
+            lons, lats= np.radians(real_inc), np.radians(real_PA)
+            ncrs = len(pred_inc)
+            vecs = coord.ang2vec(lons, lats)
+            fig, ax = skymap.scatter(vecs, c=error)
+            plt.scatter(0, 0, s=10, c='red', marker='*')    # plot source in the center
+            plt.savefig(f'{curr_dir}/fisher_single_source_10deg.png', bbox_inches='tight')
+            plt.close()
+
+        df.to_csv(f'{curr_dir}/{loss_fn}-{test_metric1:.3f}.csv')
+
+
+
 
         # Show the plot
         # plt.show()
