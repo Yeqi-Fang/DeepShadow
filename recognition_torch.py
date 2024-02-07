@@ -6,25 +6,27 @@ import datetime
 import torchvision
 import numpy as np
 import pandas as pd
+import healpy as hp
 import torch.nn as nn
 import seaborn as sns
 import torch.optim as optim
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
-from stars import BH_stars_img
-from telescope_simulator import TelescopeSimulator
 from tqdm import tqdm
 from math import ceil
 from PIL import Image
 from tqdm import tqdm
 from pathlib import Path
+from stars import BH_stars_img
 from torch.nn import functional as F
+from scipy.interpolate import interp2d
+from astrotools import auger, coord, skymap
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
-from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
+from telescope_simulator import TelescopeSimulator
 from sklearn.model_selection import train_test_split
-from astrotools import auger, coord, skymap
+from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 
 
 def angle_loss(output, target):
@@ -32,6 +34,11 @@ def angle_loss(output, target):
     loss = torch.mean(torch.min(torch.abs(output - target), torch.abs(360 + output - target)))
     return loss
 
+def angle_loss_np(output, target):
+    print(output.shape)
+    print(target.shape)
+    loss = np.mean(np.min(np.abs(output - target), np.abs(360 + output - target)))
+    return loss
 
 def double_angle_loss(output, target):
     # print(output.shape, target.shape)
@@ -46,7 +53,7 @@ def double_angle_loss(output, target):
     out_PA, target_PA = output[:, 1], target[:, 1]
     loss2 = torch.mean(torch.min((out_PA - target_PA)**2, (360 + out_PA - target_PA)**2))
     loss3 = torch.mean((out_PA - target_PA)**2)
-    loss = 10 * loss1 + loss2
+    loss = 4 * loss1 + loss2
     return loss
 
 
@@ -223,12 +230,12 @@ for para in paras:
         test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
 
-        base = torchvision.models.efficientnet_b5(
-            weights='EfficientNet_B5_Weights.IMAGENET1K_V1')
+        base = torchvision.models.efficientnet_b1(
+            weights='EfficientNet_B1_Weights.IMAGENET1K_V1')
         # print(base)
         # 5, 2048, 0/1, 1280
         base.classifier[0] = nn.Dropout(p=DROPOUT_RATE, inplace=True)
-        base.classifier[1] = nn.Linear(in_features=2048, out_features=256, bias=True)
+        base.classifier[1] = nn.Linear(in_features=1280, out_features=256, bias=True)
 
 
         class CNN(nn.Module):
@@ -473,15 +480,53 @@ for para in paras:
             df = pd.DataFrame({'Pred_inc': pred_inc, 'Pred_PA': pred_PA, 
                                'Real_inc': real_inc, 'Real_PA':real_PA})
             err_inc = np.radians(np.abs(pred_inc - real_inc))
-            err_PA = np.radians(np.abs(pred_PA - real_PA))
+            real_PA = y_full[:, 1].squeeze()
+            pred_PA = y_pred_full[:, 1].squeeze()
+            err_PA = np.radians(angle_loss(pred_PA, real_PA).cpu().numpy())
             error = err_inc + err_PA
-            lons, lats= np.radians(real_inc), np.radians(real_PA)
-            ncrs = len(pred_inc)
-            vecs = coord.ang2vec(lons, lats)
-            fig, ax = skymap.scatter(vecs, c=error)
-            plt.scatter(0, 0, s=10, c='red', marker='*')    # plot source in the center
-            plt.savefig(f'{curr_dir}/fisher_single_source_10deg.png', bbox_inches='tight')
-            plt.close()
+            # lons, lats= np.radians(real_inc), np.radians(real_PA)
+            # ncrs = len(pred_inc)
+            # vecs = coord.ang2vec(lons, lats)
+            # fig, ax = skymap.scatter(vecs, c=error)
+            # plt.scatter(0, 0, s=10, c='red', marker='*')    # plot source in the center
+            # plt.savefig(f'{curr_dir}/fisher_single_source_10deg.png', bbox_inches='tight')
+            # plt.close()
+
+
+
+            # Set the number of sources and the coordinates for the input
+            nside = 16
+            npix = hp.nside2npix(nside)
+            # print(real_inc)
+            # print(max(real_inc), min(real_inc))
+            # Coordinates and the density field f
+            thetas = np.radians(real_inc + 90)
+            thetas[thetas > np.pi] = np.pi
+            phis = np.radians(real_PA.cpu().numpy())
+            # Thetas, Phis = np.meshgrid(thetas, phis)
+            # Fs = np.sin(Thetas) ** 2 * np.cos(Phis)
+            # N = 200000
+            fs = error
+            # th = np.random.uniform(0, np.pi, N)
+            # phi = np.random.uniform(0, 2*np.pi, N)
+            # interp_func = interp2d(thetas, phis, Fs, kind='linear')
+            # fs = interp_func(th, phi)
+            # fs = np.zeros(N)
+            # for i in range(len(th)):
+            #     fs[i] = interp_func(th[i], phi[i])
+
+            # fs = Fs.flatten()
+            # Go from HEALPix coordinates to indices
+            indices = hp.ang2pix(nside, thetas, phis)
+
+            # Initate the map and fill it with the values
+            hpxmap = np.zeros(npix, dtype=np.float32)
+            for i in range(len(fs)):
+                hpxmap[indices[i]] = fs[i]
+
+            # Inspect the map
+            hp.mollview(hpxmap)
+            plt.savefig(f'{curr_dir}/fits.png', dpi=600)
 
         df.to_csv(f'{curr_dir}/{loss_fn}-{test_metric1:.3f}.csv')
 
