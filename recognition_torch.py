@@ -24,7 +24,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
-
+from astrotools import auger, coord, skymap
 
 
 def angle_loss(output, target):
@@ -38,10 +38,19 @@ def double_angle_loss(output, target):
     loss1 = torch.mean(torch.abs(out_inc - target_inc))
     out_PA, target_PA = output[:, 1], target[:, 1]
     loss2 = torch.mean(torch.min(torch.abs(out_PA - target_PA), torch.abs(360 + out_PA - target_PA)))
+    loss = loss1 + loss2
     return loss
 
+def double_angle_metric(output, target):
+    out_inc, target_inc = output[:, 0], target[:, 0]
+    loss1 = torch.mean(torch.abs(out_inc - target_inc))
+    out_PA, target_PA = output[:, 1], target[:, 1]
+    loss2 = torch.mean(torch.min(torch.abs(out_PA - target_PA), torch.abs(360 + out_PA - target_PA)))
+    return loss1, loss2
+
+
 angular_pixel_size_input_images = [16.5e-4]
-paras  = ['PA']
+paras  = [['PA', 'Inclination']]
 
 num_imgaes = 100
 height = 1024
@@ -54,7 +63,7 @@ D = 6.5
 F = 131.4
 SIZE = 240
 # IN_SIZE = 8
-loss_fn = 'angle' # angle
+
 num_epochs = 50
 BATCH_SIZE = 256
 inc_c = 91
@@ -78,6 +87,14 @@ for para in paras:
 
         # angular_pixel_size_input_image = 4e-4
 
+        if para == ['PA', 'Inclination']:
+            loss_fn = 'double'
+            metric = 'double'
+        elif para == 'PA':
+            loss_fn = 'angle'
+
+        elif para == 'Inclination' or para == 'size':
+            loss_fn = 'mse'
 
         tele_config = dict(
             # physical parameters
@@ -125,7 +142,7 @@ for para in paras:
         # df.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
         df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
         df.set_index('PhotoName', inplace=True)
-        series = df[para]
+        df_sub = df[para]
         inclination = df['Inclination']
 
 
@@ -133,48 +150,18 @@ for para in paras:
         for i, image_name in tqdm(enumerate(images)):
             if (image_name.split('.')[1] == 'png'):
                 # if i == 0:
-                try:
-                    if para == 'PA' and np.abs(inclination[image_name]) > inc_c :
-                        continue
-                except ValueError:
-                    if para == 'PA' and np.abs(inclination[image_name][0]) > inc_c :
-                        continue
+                # try:
+                #     if para == 'PA' and np.abs(inclination[image_name]) > inc_c :
+                #         continue
+                # except ValueError:
+                #     if para == 'PA' and np.abs(inclination[image_name][0]) > inc_c :
+                #         continue
                 image_path = os.path.join(data_dir, image_name)
                 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-                # image = cv2.resize(image, (SIZE, SIZE))
-                # print(image_name)
-                # stars_config['BHs'] = image_name
-                # img = BH_stars_img(**stars_config)
-                # img.stars_gen()
-                # img.stars_gen()
-                # img.BHs_gen()
-                # noise_BHs = img.add_noise(img.stars_BHs_img, radius=0)
-                # tele_config['input_image'] = noise_BHs
-                # telescope_simulator = TelescopeSimulator(**tele_config)
-                # output_img = telescope_simulator.generate_image(show=False)
-                # x = np.random.randint(0, background.shape[1] - img64.shape[1])
-                # y = np.random.randint(0, background.shape[0] - img64.shape[0])
-                # new = background.copy()
-                # new[y:y+img64.shape[0], x:x+img64.shape[1]] = img64
-                label = series[image_name]
+                label = df_sub[image_name].to_list()
                 dataset.append(np.array(image))
                 labels.append(label)
                 indexes.append(image_name)
-        # dataset = np.array(dataset)
-        # labels = np.array(labels)
-        # indexes = np.array(indexes)
-        # print(len(dataset))
-        # print(dataset)
-        # print(labels)
-
-
-
-        # img_test = dataset[0]
-        # img_test.shape
-
-
-        # plt.imshow(img_test)
-
 
         x_train, x_test, y_train, y_test = train_test_split(dataset, labels, test_size=0.2, random_state=2024)
         _, _, index_train, index_test = train_test_split(dataset, indexes, test_size=0.2, random_state=2024)
@@ -262,12 +249,14 @@ for para in paras:
 
         model = CNN(base=base)
         model.to(device)
-        if loss_fn == 'mse':
-            criterion = nn.MSELoss()
-        elif loss_fn == 'mae':
-            criterion = nn.L1Loss()
+        if loss_fn == 'double':
+            criterion = double_angle_loss
         elif loss_fn == 'angle':
             criterion = angle_loss
+        elif loss_fn == 'mse':
+            criterion = nn.MSELoss()
+        else:
+            raise ValueError
         optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
         scaler = torch.cuda.amp.GradScaler()
         scheduler = StepLR(optimizer, step_size=10, gamma=0.2)
@@ -304,27 +293,59 @@ for para in paras:
             train_loss /= train_batch_size
             print(f"Training Loss at epoch {epoch} is {train_loss:.4f}", end='\t')
             model.eval()
-            test_loss, test_mae = 0, 0
+            test_loss, test_metric1, test_metric2 = 0, 0, 0
             with torch.no_grad():
                 for x, y in test_loader:
                     x = x.to(device=device)
                     y = y.to(device=device)
                     y_pred = model(x)
                     test_loss += criterion(y_pred, y).item()
-                    test_mae += torch.abs(y-y_pred).type(torch.float).sum().item()
-            test_mae /= test_data_size
+                    if para == 'size' or para == 'Inclination':
+                        test_metric1 += torch.abs(y-y_pred).type(torch.float).sum().item()
+                        # metric is loss function it self
+                        pass
+                    elif para == 'PA':
+                        # test_metric1 += angle_loss(y_pred, y)
+                        # metric is loss function it self
+                        pass
+                    elif para == ['PA', 'Inclination']:
+                        temp1, temp2 = double_angle_metric(y_pred, y)
+                        test_metric1 += temp1 # mae for inclination
+                        test_metric2 += temp2 # mae for PA
+                    else:
+                        raise ValueError
+            test_metric1 /= test_data_size
+            test_metric2 /= test_data_size
             test_loss /= test_batch_size
-            print(f"Testing Loss:{test_loss:.4f}\tMAE:{test_mae:.3f}")
-            if test_mae < mae_glo and test_mae < critical_mae:
-                name = f"{curr_models}/epoch-{epoch}_MAE-{test_mae:.3f}.pth.tar"
-                print(f'MAE improve from {mae_glo:.3f} to {test_mae:.3f}, saving model dict to {name}')
-                mae_glo = test_mae
+            if para == 'size' or para == 'Inclination' :
+                print(f"Testing Loss:{test_loss:.4f}\tMAE of {para}:{test_metric1:.3f}")
+            elif para == 'PA':
+                print(f"Testing Loss and periodic MAE of {para}:{test_loss:.4f}")
+            elif para == ['PA', 'Inclination']:
+                print(f"Testing Loss:{test_loss:.4f}\tMAE of {para[0]} and {para[1]} :{test_metric1:.3f} and {test_metric2:.3f}")
+            else:
+                raise ValueError
+            
+
+            if test_metric1 < mae_glo and test_metric1 < critical_mae:
+                name = f"{curr_models}/epoch-{epoch}_MAE-{test_metric1:.3f}.pth.tar"
+                print(f'MAE improve from {mae_glo:.3f} to {test_metric1:.3f}, saving model dict to {name}')
+                mae_glo = test_metric1
                 checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict()}
                 save_checkpoint(checkpoint, filename=name)
             writer.add_scalars("result/losses", {"train_loss": train_loss, "test_loss": test_loss}, step)
-            writer.add_scalar("result/MAE", test_mae, step)
+            if para == 'size' or para == 'Inclination':
+                writer.add_scalar("result/metirc", test_metric1, step)
+            elif para == 'PA':
+                pass
+            elif para == ['PA', 'Inclination']:
+                writer.add_scalar("result/metirc", {'Inclination':test_metric1, 'PA': test_metric2}, step)
+            else:
+                raise ValueError
+            
             df_temp = pd.DataFrame({'epoch':[epoch], 'train loss':[train_loss],
-                                    'test loss':[test_loss], 'test mae':[test_mae]})
+                                    'test loss':[test_loss], 'test_metric1':[test_metric1], 
+                                    'test_metric2':[test_metric2]})
             df_temp.to_csv(f'{curr_logs}/results.csv', mode='a', header=False)
             step += 1
         print(f'Finally best mae:{mae_glo:.3f}')
@@ -353,6 +374,23 @@ for para in paras:
                 y_full = torch.cat((y_full, y), 0)
                 y_pred_full = torch.cat((y_pred_full, y_pred), 0)
             loss = criterion(y_pred_full, y_full)
+            if para == 'size' or para == 'Inclination':
+                test_metric1 = torch.abs(y-y_pred).type(torch.float).sum().item()
+                # metric is loss function it self
+                mae = test_metric1 / test_data_size
+                print("整体测试集上的Loss: {}".format(loss))
+                print("整体测试集上的MAE: {}".format(mae))
+            elif para == 'PA':
+                # test_metric1 += angle_loss(y_pred, y)
+                # metric is loss function it self
+                print("整体测试集上的Loss and MAE: {}".format(mae))
+            
+            elif para == ['PA', 'Inclination']:
+                temp1, temp2 = double_angle_metric(y_pred, y)
+                test_metric1 = temp1 # mae for inclination
+                test_metric2 = temp2 # mae for PA
+            else:
+                raise ValueError
             test_mae = torch.abs(y_full-y_pred_full).type(torch.float).sum().item()
 
         # except:
@@ -369,9 +407,7 @@ for para in paras:
         #             y_pred_full = torch.cat((y_pred_full, y_pred), 0)
         #         loss = criterion(y_pred_full, y_full)
         #         test_mae = torch.abs(y-y_pred).type(torch.float).sum().item()
-        mae = test_mae/test_data_size
-        print("整体测试集上的Loss: {}".format(loss))
-        print("整体测试集上的MAE: {}".format(test_mae/test_data_size))
+
 
         model.train();
 
