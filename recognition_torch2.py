@@ -302,20 +302,20 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     model1.eval()
 
     with torch.no_grad():
-        y_full = torch.tensor([]).to(device=device)
-        y_pred_full = torch.tensor([]).to(device=device)
+        y_full_inc = torch.tensor([]).to(device=device)
+        y_pred_full_inc = torch.tensor([]).to(device=device)
         for x, y in test_loader1:
             x = x.to(device=device)
             y = y.to(device=device)
             y_pred = model1(x)
-            y_full = torch.cat((y_full, y), 0)
-            y_pred_full = torch.cat((y_pred_full, y_pred), 0)
-        loss = loss_fn(y_pred_full, y_full)
-        test_mae = torch.abs(y_full-y_pred_full).type(torch.float).sum().item()
+            y_full_inc = torch.cat((y_full_inc, y), 0)
+            y_pred_full_inc = torch.cat((y_pred_full_inc, y_pred), 0)
+        loss = loss_fn(y_pred_full_inc, y_full_inc)
+        test_mae = torch.abs(y_full_inc - y_pred_full_inc).type(torch.float).sum().item()
 
     mae = test_mae/test_data_size
-    print("整体测试集上的Loss: {}".format(loss))
-    print("整体测试集上的MAE: {}".format(test_mae/test_data_size))
+    print("Inclination 整体测试集上的Loss: {}".format(loss))
+    print("Inclination 整体测试集上的MAE: {}".format(test_mae/test_data_size))
 
     model1.train();
 
@@ -397,27 +397,32 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     model2.eval()
 
     with torch.no_grad():
-        y_full = torch.tensor([]).to(device=device)
-        y_pred_full = torch.tensor([]).to(device=device)
+        y_full_PA = torch.tensor([]).to(device=device)
+        y_pred_full_PA = torch.tensor([]).to(device=device)
         for x, y in test_loader2:
             x = x.to(device=device)
             y = y.to(device=device)
             y_pred = model2(x)
-            y_full = torch.cat((y_full, y), 0)
-            y_pred_full = torch.cat((y_pred_full, y_pred), 0)
-        loss = loss_fn(y_pred_full, y_full)
-        test_mae = torch.abs(y_full-y_pred_full).type(torch.float).sum().item()
+            y_full_PA = torch.cat((y_full_PA, y), 0)
+            y_pred_full_PA = torch.cat((y_pred_full_PA, y_pred), 0)
+        loss = loss_fn(y_pred_full_PA, y_full_PA)
+        # test_mae = angle_loss(y_full_PA-y_pred_full_PA)
 
-    mae = test_mae/test_data_size
-    print("整体测试集上的Loss: {}".format(loss))
-    print("整体测试集上的MAE: {}".format(test_mae/test_data_size))
+    # mae = test_mae/test_data_size
+    print("整体测试集上的Loss and MAE: {}".format(loss))
+    # print("整体测试集上的MAE: {}".format(test_mae/test_data_size))
 
     model2.train();
 
 
-
-    df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
+    pred_inc = y_pred_full_inc.squeeze().cpu().numpy()
+    pred_PA = y_pred_full_PA.squeeze().cpu().numpy()
+    real_inc = y_full_inc.squeeze().cpu().numpy()
+    real_PA = y_full_PA.squeeze().cpu().numpy()
+    df = pd.DataFrame({'Pred_inc': pred_inc, 'Pred_PA': pred_PA, 
+                       'Real_inc': real_inc, 'Real_PA':real_PA})
     df.to_csv(f'{curr_dir}/acc:{mae:.3f}.csv')
+    
 
 
 
