@@ -38,6 +38,8 @@ def angle_loss(output, target):
     return loss
 
 
+
+
 angular_pixel_size_input_images = [16.5e-4]
 num_imgaes = 100
 height = 1024
@@ -102,8 +104,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     PAs = []
     Inclinations = []
     df = pd.read_csv(csv_dir)
-
-
     # df.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
     df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
     df.set_index('PhotoName', inplace=True)
@@ -171,7 +171,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     class CNN(nn.Module):
         def __init__(self):
             super(CNN, self).__init__()
-            base = torchvision.models.efficientnet_b1(weights='EfficientNet_B1_Weights.IMAGENET1K_V1')
+            base = torchvision.models.efficientnet_b1(weights='EfficientNet_B1_Weights.DEFAULT')
             base.classifier[0] = nn.Dropout(p=DROPOUT_RATE, inplace=True)
             base.classifier[1] = nn.Linear(in_features=1280, out_features=256, bias=True)
             self.base = base
@@ -270,7 +270,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     print(f'Finally best mae:{mae_glo_inc:.3f}')
     writer.close()
 
-
     checkpoint = {"state_dict": model1.state_dict(), "optimizer": optimizer.state_dict()}
     save_checkpoint(checkpoint, filename=curr_models / "final_inc.pth.tar")
 
@@ -315,7 +314,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
 
     df = pd.DataFrame({'epoch':[], 'train loss':[], 'test loss':[], 'test mae':[]})
     df.to_csv(curr_dir / 'results_PA.csv', index=False)
-    name = curr_dir / "final_PA.pth.tar"
+    name = curr_models / "final_PA.pth.tar"
 
     for epoch in range(1, num_epochs + 1):
         train_loss = 0
@@ -363,10 +362,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
 
     checkpoint = {"state_dict": model2.state_dict(), "optimizer": optimizer.state_dict()}
     save_checkpoint(checkpoint, filename=curr_models / "final_PA.pth.tar")
-
-
-    # best_model = name
-    # path_of_best_model = os.path.join(curr_models, best_model)
     model2.load_state_dict(torch.load(name)['state_dict'])
 
 
@@ -393,7 +388,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     real_PA = y_full_PA.squeeze().cpu().numpy()
     df = pd.DataFrame({'Pred_inc': pred_inc, 'Pred_PA': pred_PA, 
                        'Real_inc': real_inc, 'Real_PA':real_PA})
-    df.to_csv(curr_dir / f'/acc:{mae:.3f}.csv', index=False)
+    df.to_csv(curr_dir / f'acc:{mae:.3f}.csv', index=False)
     err_inc = np.radians(np.abs(pred_inc - real_inc))
     real_PA = y_full_PA.squeeze()
     pred_PA = y_pred_full_PA.squeeze()
