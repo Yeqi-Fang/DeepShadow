@@ -22,10 +22,10 @@ from torch.nn import functional as F
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
-from scipy.interpolate import LinearNDInterpolator
 from telescope_simulator import TelescopeSimulator
-from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
+from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
+from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 
 
 
@@ -37,7 +37,16 @@ def angle_loss(output, target):
     loss = torch.mean(torch.min(torch.abs(output - target), torch.abs(360 + output - target)))
     return loss
 
-
+class LinearNDInterpolatorExt(object):
+  def __init__(self, points,values):
+    self.funcinterp = LinearNDInterpolator(points,values)
+    self.funcnearest = NearestNDInterpolator(points,values)
+  def __call__(self,*args):
+    t = self.funcinterp(*args)
+    if not np.isnan(t):
+      return t.item(0)
+    else:
+      return self.funcnearest(*args)
 
 
 angular_pixel_size_input_images = [16.5e-4]
@@ -313,7 +322,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     mae_glo_PA = 100
 
     df = pd.DataFrame({'epoch':[], 'train loss':[], 'test loss':[], 'test mae':[]})
-    df.to_csv(curr_dir / 'results_PA.csv', index=False)
+    df.to_csv(curr_logs / 'results_PA.csv', index=False)
     name = curr_models / "final_PA.pth.tar"
 
     for epoch in range(1, num_epochs + 1):
@@ -401,11 +410,14 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     phis = np.radians(real_PA.cpu().numpy())
     fs = error
     the_phi = np.c_[thetas, phis]
-    lut2 = LinearNDInterpolator(the_phi, fs, fill_value=0.3)
-    N = 500000
+    lut2 = LinearNDInterpolatorExt(the_phi, fs)
+    N = int(10e5)
     Theta = np.random.uniform(0, np.pi, N)
     Phi = np.random.uniform(0, 2*np.pi, N)
-    Fs = lut2(Theta, Phi)
+    interpolate_points = np.zeros(N, dtype=np.float16)
+    for ii in range(N):
+        interpolate_points[ii] = lut2(Theta[ii], Phi[ii])
+    Fs = interpolate_points
 
     indices = hp.ang2pix(nside, Theta, Phi)
     hpxmap = np.zeros(npix, dtype=np.float32)
