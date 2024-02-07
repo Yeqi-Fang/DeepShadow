@@ -28,18 +28,27 @@ from astrotools import auger, coord, skymap
 
 
 def angle_loss(output, target):
-    print(output.shape)
+    # print(output.shape)
     loss = torch.mean(torch.min(torch.abs(output - target), torch.abs(360 + output - target)))
     return loss
 
 
 def double_angle_loss(output, target):
+    # print(output.shape, target.shape)
     out_inc, target_inc = output[:, 0], target[:, 0]
-    loss1 = torch.mean(torch.abs(out_inc - target_inc))
+
+    # loss1 = torch.mean(torch.abs(out_inc - target_inc))
+    # out_PA, target_PA = output[:, 1], target[:, 1]
+    # loss2 = torch.mean(torch.min(torch.abs(out_PA - target_PA), torch.abs(360 + out_PA - target_PA)))
+    # loss3 = torch.mean(torch.abs(out_PA - target_PA))
+    # loss = 2 * loss1 + loss2
+    loss1 = torch.mean((out_inc - target_inc)**2)
     out_PA, target_PA = output[:, 1], target[:, 1]
-    loss2 = torch.mean(torch.min(torch.abs(out_PA - target_PA), torch.abs(360 + out_PA - target_PA)))
-    loss = loss1 + loss2
+    loss2 = torch.mean(torch.min((out_PA - target_PA)**2, (360 + out_PA - target_PA)**2))
+    loss3 = torch.mean((out_PA - target_PA)**2)
+    loss = 4 * loss1 + loss2
     return loss
+
 
 def double_angle_metric(output, target):
     out_inc, target_inc = output[:, 0], target[:, 0]
@@ -50,7 +59,7 @@ def double_angle_metric(output, target):
 
 
 angular_pixel_size_input_images = [16.5e-4]
-paras  = [['PA', 'Inclination']]
+paras  = [['Inclination', 'PA']]
 
 num_imgaes = 100
 height = 1024
@@ -80,14 +89,16 @@ for para in paras:
         elif para == 'size':
             critical_mae = 4
         elif para == 'PA':
-            critical_mae = 50
+            critical_mae = 30
+        elif para == ['Inclination', 'PA']:
+            critical_mae = 30
         else:
             raise ValueError
         print(f'starting ----------------------{angular_pixel_size_input_image:.3e}')
 
         # angular_pixel_size_input_image = 4e-4
 
-        if para == ['PA', 'Inclination']:
+        if para == ['Inclination', 'PA']:
             loss_fn = 'double'
             metric = 'double'
         elif para == 'PA':
@@ -118,12 +129,17 @@ for para in paras:
 
         now = datetime.datetime.now()
         date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
-        os.mkdir(f'logs_recognition/{para}/{date_string}')
-        os.mkdir(f'logs_recognition/{para}/{date_string}/models')
-        os.mkdir(f'logs_recognition/{para}/{date_string}/logs')
-        curr_dir = f'logs_recognition/{para}/{date_string}'
-        curr_models = f'logs_recognition/{para}/{date_string}/models'
-        curr_logs = f'logs_recognition/{para}/{date_string}/logs'
+        if para == ['Inclination', 'PA']:
+            para_string = '_'.join(para)
+        else:
+            para_string = para
+            
+        os.mkdir(f'logs_recognition/{para_string}/{date_string}')
+        os.mkdir(f'logs_recognition/{para_string}/{date_string}/models')
+        os.mkdir(f'logs_recognition/{para_string}/{date_string}/logs')
+        curr_dir = f'logs_recognition/{para_string}/{date_string}'
+        curr_models = f'logs_recognition/{para_string}/{date_string}/models'
+        curr_logs = f'logs_recognition/{para_string}/{date_string}/logs'
 
 
 
@@ -158,10 +174,13 @@ for para in paras:
                 #         continue
                 image_path = os.path.join(data_dir, image_name)
                 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-                label = df_sub[image_name].to_list()
+                # print(df_sub)
+                label = df_sub.loc[image_name, :].to_list()
                 dataset.append(np.array(image))
                 labels.append(label)
                 indexes.append(image_name)
+
+        # print(labels)
 
         x_train, x_test, y_train, y_test = train_test_split(dataset, labels, test_size=0.2, random_state=2024)
         _, _, index_train, index_test = train_test_split(dataset, indexes, test_size=0.2, random_state=2024)
@@ -279,7 +298,7 @@ for para in paras:
             loop = tqdm(train_loader, leave=False)
             for batch_idx, (data, targets) in enumerate(loop):
                 data = data.to(device=device)
-                targets = targets.to(device=device)
+                targets = targets.to(device=device).squeeze()
                 with torch.cuda.amp.autocast():
                     scores = model(data)
                     loss = criterion(scores, targets)
@@ -297,7 +316,7 @@ for para in paras:
             with torch.no_grad():
                 for x, y in test_loader:
                     x = x.to(device=device)
-                    y = y.to(device=device)
+                    y = y.to(device=device).squeeze()
                     y_pred = model(x)
                     test_loss += criterion(y_pred, y).item()
                     if para == 'size' or para == 'Inclination':
@@ -308,25 +327,27 @@ for para in paras:
                         # test_metric1 += angle_loss(y_pred, y)
                         # metric is loss function it self
                         pass
-                    elif para == ['PA', 'Inclination']:
+                    elif para == ['Inclination', 'PA']:
                         temp1, temp2 = double_angle_metric(y_pred, y)
+                        temp1, temp2 = temp1.item(), temp2.item()
+                        # print(temp1, temp2)
                         test_metric1 += temp1 # mae for inclination
                         test_metric2 += temp2 # mae for PA
                     else:
                         raise ValueError
-            test_metric1 /= test_data_size
-            test_metric2 /= test_data_size
+            test_metric1 /= test_batch_size
+            test_metric2 /= test_batch_size
             test_loss /= test_batch_size
+
             if para == 'size' or para == 'Inclination' :
                 print(f"Testing Loss:{test_loss:.4f}\tMAE of {para}:{test_metric1:.3f}")
             elif para == 'PA':
                 print(f"Testing Loss and periodic MAE of {para}:{test_loss:.4f}")
-            elif para == ['PA', 'Inclination']:
+            elif para == ['Inclination', 'PA']:
                 print(f"Testing Loss:{test_loss:.4f}\tMAE of {para[0]} and {para[1]} :{test_metric1:.3f} and {test_metric2:.3f}")
             else:
                 raise ValueError
             
-
             if test_metric1 < mae_glo and test_metric1 < critical_mae:
                 name = f"{curr_models}/epoch-{epoch}_MAE-{test_metric1:.3f}.pth.tar"
                 print(f'MAE improve from {mae_glo:.3f} to {test_metric1:.3f}, saving model dict to {name}')
@@ -338,8 +359,8 @@ for para in paras:
                 writer.add_scalar("result/metirc", test_metric1, step)
             elif para == 'PA':
                 pass
-            elif para == ['PA', 'Inclination']:
-                writer.add_scalar("result/metirc", {'Inclination':test_metric1, 'PA': test_metric2}, step)
+            elif para == ['Inclination', 'PA']:
+                writer.add_scalars("result/metirc", {'Inclination':test_metric1, 'PA': test_metric2}, step)
             else:
                 raise ValueError
             
@@ -378,35 +399,21 @@ for para in paras:
                 test_metric1 = torch.abs(y-y_pred).type(torch.float).sum().item()
                 # metric is loss function it self
                 mae = test_metric1 / test_data_size
-                print("整体测试集上的Loss: {}".format(loss))
-                print("整体测试集上的MAE: {}".format(mae))
+                print(f"整体测试集上的Loss: {loss:.4f}")
+                print(f"整体测试集上的MAE: {mae:.4f}")
             elif para == 'PA':
+
                 # test_metric1 += angle_loss(y_pred, y)
                 # metric is loss function it self
-                print("整体测试集上的Loss and MAE: {}".format(mae))
+                print(f"整体测试集上的Loss and MAE: {loss:.4f}")
             
-            elif para == ['PA', 'Inclination']:
-                temp1, temp2 = double_angle_metric(y_pred, y)
-                test_metric1 = temp1 # mae for inclination
-                test_metric2 = temp2 # mae for PA
+            elif para == ['Inclination', 'PA']:
+                test_metric1, test_metric2 = double_angle_metric(y_pred, y)
+                test_metric1, test_metric2 = test_metric1.item(), test_metric2.item()
+                print(f"整体测试集上的Loss: {loss:.4f}")
+                print(f"整体测试集上的MAE, {para[0]}: {test_metric1:.4f}. {para[1]}: {test_metric2:.4f}")
             else:
                 raise ValueError
-            test_mae = torch.abs(y_full-y_pred_full).type(torch.float).sum().item()
-
-        # except:
-        #     # if memory is not enough, use cpu instead.
-        #     model.to('cpu')
-        #     with torch.no_grad():
-        #         y_full = torch.tensor([]).to('cpu')
-        #         y_pred_full = torch.tensor([]).to('cpu')
-        #         for x, y in test_loader:
-        #             x = x.to('cpu')
-        #             y = y.to('cpu')
-        #             y_pred = model(x)
-        #             y_full = torch.cat((y_full, y), 0)
-        #             y_pred_full = torch.cat((y_pred_full, y_pred), 0)
-        #         loss = criterion(y_pred_full, y_full)
-        #         test_mae = torch.abs(y-y_pred).type(torch.float).sum().item()
 
 
         model.train();
