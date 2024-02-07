@@ -36,10 +36,10 @@ def angle_loss(output, target):
     return loss
 
 
-angular_pixel_size_input_images = [15e-4]
+angular_pixel_size_input_images = [16.5e-4]
 paras  = ['PA']
 
-num_imgaes = 500
+num_imgaes = 100
 height = 1024
 width = 1024
 shape = 'rect'
@@ -50,7 +50,7 @@ D = 6.5
 F = 131.4
 SIZE = 240
 # IN_SIZE = 8
-loss_fn = 'angle' # angle
+loss_fn = 'mse' # angle
 num_epochs = 100
 BATCH_SIZE = 256
 inc_c = 30
@@ -129,8 +129,12 @@ for para in paras:
         for i, image_name in tqdm(enumerate(images)):
             if (image_name.split('.')[1] == 'png'):
                 # if i == 0:
-                if para == 'PA' and np.abs(inclination[image_name]) > inc_c :
-                    continue
+                try:
+                    if para == 'PA' and np.abs(inclination[image_name]) > inc_c :
+                        continue
+                except ValueError:
+                    if para == 'PA' and np.abs(inclination[image_name][0]) > inc_c :
+                        continue
                 image_path = os.path.join(data_dir, image_name)
                 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
                 # image = cv2.resize(image, (SIZE, SIZE))
@@ -156,7 +160,8 @@ for para in paras:
         # labels = np.array(labels)
         # indexes = np.array(indexes)
         # print(len(dataset))
-
+        # print(dataset)
+        # print(labels)
 
 
 
