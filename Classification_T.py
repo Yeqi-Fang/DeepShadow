@@ -261,7 +261,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     save_checkpoint(checkpoint, filename=f"{curr_models}/final.pth.tar")
 
 
-    best_model = os.listdir(curr_models)[-1]
+    best_model = os.listdir(curr_models)[-2]
     path_of_best_model = os.path.join(curr_models, best_model)
     model.load_state_dict(torch.load(path_of_best_model)['state_dict'])
 
@@ -320,6 +320,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         'Training Epoch': epoch,
         'Engine': 'PyTorch'
     }
-    df = pd.read_csv('logs_classification/results.csv')
+    df = pd.read_excel('logs_classification/results.xlsx')
     df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
-    df.to_csv('logs_classification/results.csv', index=False)
+    df.to_excel('logs_classification/results.xlsx', index=False)

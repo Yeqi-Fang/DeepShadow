@@ -308,8 +308,38 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     print("Inclination 整体测试集上的MAE: {}".format(test_mae/test_data_size))
 
     model1.train();
+    # --------------------------------------------  Ploting ------------------------------------------------
+    x = y_pred_full_inc.squeeze().cpu().numpy()
+    y = y_full_inc.squeeze().cpu().numpy()
+    total_range = 180
+    col =[]
+    sizes = []
+    for i in range(0, len(x)):
+        distance_to_line = abs(x[i] - y[i])
+        if distance_to_line < total_range / 36: 
+            col.append('blue')
+            sizes.append(70)
+        elif distance_to_line < total_range / 18:
+            col.append('green')
+            sizes.append(40)
+        else: 
+            col.append('magenta')
+            sizes.append(40)
 
 
+    plot_range = [-91, 91]
+    plt.figure(figsize=(7, 7))
+    # Create a line plot of the data points and the linear regression line
+    plt.scatter(x, y, alpha=0.5, s=sizes, color=col)
+    plt.plot(plot_range, plot_range, 'red', lw=2.5)
+
+    # Label the axes and title the plot
+    plt.xlabel(f"Predicted Inclination")
+    plt.ylabel(f"Real Inclination")
+    plt.xlim(*plot_range)
+    plt.ylim(*plot_range)
+    # plt.title("Linear Regression")
+    plt.savefig(f'{curr_dir}/fit.png', dpi=600)
 
 
 
