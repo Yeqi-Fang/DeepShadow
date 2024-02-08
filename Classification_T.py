@@ -32,15 +32,14 @@ wl = 100e-9
 D = 6.5
 F = 131.4
 SIZE = 240
-num_epochs = 20
+num_epochs = 5
 BATCH_SIZE = 128
 DROPOUT_RATE = 0.5
 learning_rate = 1e-4
 weight_decay = 1e-4
 critical_acc = 0.7
-
-angular_pixel_size_input_images = [15.5e-4, 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 
-                                   9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4,
+# 15.5e-4, 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 9.5e-4, 10.5e-4, 
+angular_pixel_size_input_images = [11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4,
                                    1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4,
                                    1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
 
@@ -209,6 +208,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     total_test_step = 1
     acc_glo = 0
 
+    name = curr_models / "final.pth.tar"
     for epoch in range(1, num_epochs + 1):
         train_losses = []
         model.train()
@@ -242,7 +242,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         test_acc /= test_data_size
         print(f"Testing Loss:\t{test_loss:.4f}\tAccuracy:\t{test_acc:.3f}")
         if test_acc > acc_glo and test_acc > critical_acc:
-            name = curr_models / f"epoch:{epoch}-Accuracy-{test_acc:.3f}.pth.tar"
+            name.unlink(missing_ok=True)
+            name = curr_models / f"epoch-{epoch}-Accuracy-{test_acc:.3f}.pth.tar"
             print(f'Accuracy improve from {acc_glo:.3f} to {test_acc:.3f}, saving model dict to {name}')
             acc_glo = test_acc
             checkpoint = {"state_dict": model.state_dict(),"optimizer": optimizer.state_dict(),}
@@ -258,12 +259,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         "state_dict": model.state_dict(),
         "optimizer": optimizer.state_dict(),
     }
-    save_checkpoint(checkpoint, filename=f"{curr_models}/final.pth.tar")
-
-
-    best_model = os.listdir(curr_models)[-2]
-    path_of_best_model = os.path.join(curr_models, best_model)
-    model.load_state_dict(torch.load(path_of_best_model)['state_dict'])
+    save_checkpoint(checkpoint, filename=curr_models / "final.pth.tar")
+    model.load_state_dict(torch.load(name)['state_dict'])
 
 
     test_data_size = len(test_dataset)
