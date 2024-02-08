@@ -35,7 +35,7 @@ SIZE = 240
 num_epochs = 20
 BATCH_SIZE = 128
 DROPOUT_RATE = 0.5
-learning_rate = 3e-4
+learning_rate = 1e-4
 weight_decay = 1e-4
 critical_acc = 0.7
 
