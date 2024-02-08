@@ -1,0 +1,1 @@
+{"input_image": "./stars/BHs.png", "telescope_diameter_m": 6.5, "telescope_focal_length_m": 131.4, "angular_pixel_size_input_image": 0.00065, "wavelength": 1e-07, "CCD_pixel_size": 4.1407897607446733e-07, "CCD_pixel_count": 1024, "show": false}
