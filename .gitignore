@@ -36,8 +36,10 @@ share/python-wheels/
 
 logs_classification/**/logs
 logs_classification/**/models
+logs_classification/**/*.png
 logs_recognition/**/logs
 logs_recognition/**/models
+logs_recognition/**/*.png
 logs_yolo/* 
 !logs_yolo/results.xlsx
 
