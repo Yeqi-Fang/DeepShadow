@@ -234,7 +234,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     df = pd.DataFrame({'epoch':[], 'train loss':[], 'test loss':[], 'test mae':[]})
     df.to_csv(curr_logs / 'results_inc.csv', index=False)
     name = curr_models / "final_inc.pth.tar"
-    name = Path('')
     for epoch in range(1, num_epochs + 1):
         train_loss = 0
         model1.train()
