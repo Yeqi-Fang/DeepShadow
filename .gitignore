@@ -33,10 +33,11 @@ share/python-wheels/
 
 224/
 
-logs_classification/*
-!logs_classification/results.xlsx
-logs_recognition/*
-!logs_recognition/results.xlsx
+
+logs_classification/**/logs
+logs_classification/**/models
+logs_recognition/**/logs
+logs_recognition/**/models
 logs_yolo/* 
 !logs_yolo/results.xlsx
 

@@ -290,7 +290,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
 
 
     df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
-    df.to_csv(f'{curr_dir}/acc:{acc_glo}.csv')
+    df.to_csv(f'{curr_dir}/acc-{acc_glo}.csv')
 
 
     cm = confusion_matrix(df.Real, df.Pred)
