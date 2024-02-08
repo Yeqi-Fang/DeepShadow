@@ -1,6 +1,5 @@
 import os
 import cv2
-import glob
 import torch
 import datetime
 import torchvision
@@ -90,10 +89,11 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         height=height, width=width, bg_color=0, shape=shape, BHS_lower_size=64, BH_upper_size=75
     )
 
+    data_set = Path('tele_datasets')
+    data_dirs = data_set.glob(f"reg_num{num_imgaes}_rect_wl{wl:.3e}_*{F}*{angular_pixel_size_input_image:.2e}*_BHSize{BH_lower}-{BH_upper}")
 
-    data_dirs = glob.glob(f"tele_datasets/reg_num{num_imgaes}_rect_wl{wl:.3e}_*{F}*{angular_pixel_size_input_image:.2e}*_BHSize{BH_lower}-{BH_upper}")
-    assert len(data_dirs) != 0, 'Empty'
-    assert len(data_dirs) == 1, "Please specify more parameters!"
+    assert len(list(data_dirs)) != 0, 'Empty'
+    assert len(list(data_dirs)) == 1, "Please specify more parameters!"
     data_dir = data_dirs[0]
 
 
@@ -108,7 +108,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
 
     writer = SummaryWriter(curr_logs)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    csv_dir = f"{data_dir}/labels.csv"
+    csv_dir = data_dir / "labels.csv"
     os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
     # --------------------------------------------  Data Preprocessing ------------------------------------------------
@@ -308,6 +308,11 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     print("Inclination 整体测试集上的MAE: {}".format(test_mae/test_data_size))
 
     model1.train();
+
+
+
+
+
 
     # --------------------------------------------  PA ------------------------------------------------
     model2 = CNN()
