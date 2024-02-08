@@ -320,6 +320,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         'Training Epoch': epoch,
         'Engine': 'PyTorch'
     }
-    df = pd.read_csv('logs_classification/results.csv')
+    df = pd.read_excel('logs_classification/results.xlsx')
     df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
-    df.to_csv('logs_classification/results.csv', index=False)
+    df.to_excel('logs_classification/results.xlsx', index=False)
