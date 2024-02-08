@@ -32,7 +32,7 @@ wl = 100e-9
 D = 6.5
 F = 131.4
 SIZE = 240
-num_epochs = 100
+num_epochs = 20
 BATCH_SIZE = 128
 DROPOUT_RATE = 0.5
 learning_rate = 3e-4
@@ -306,7 +306,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     plt.xlabel('Predicted Temperature')
     plt.ylabel('True Temperature')
     plt.savefig(f'{curr_dir}/confusion.png', dpi=600)
-    plt.show()
+    plt.savefig(f'{curr_dir}/confusion.pdf')
+    # plt.show()
 
 
     a = {'Model_name': 'EfficientNet-B1',
@@ -319,6 +320,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         'Training Epoch': epoch,
         'Engine': 'PyTorch'
     }
-    df = pd.read_csv('/content/drive/MyDrive/GW/shadow/results.csv')
+    df = pd.read_csv('logs_classification/results.csv')
     df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
-    df.to_csv('/content/drive/MyDrive/GW/shadow/results.csv', index=False)
+    df.to_csv('logs_classification/results.csv', index=False)
