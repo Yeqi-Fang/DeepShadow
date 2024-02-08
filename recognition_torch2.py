@@ -49,8 +49,8 @@ class LinearNDInterpolatorExt(object):
 # 14e-4, 15e-4,
 # 15.5e-4, 16e-4, 1
     # 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4,
-angular_pixel_size_input_images = [
-                                   1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4,
+                                #    1.5e-4, 2.5e-4, 3.5e-4, 
+angular_pixel_size_input_images = [4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4,
                                    1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
 num_imgaes = 100
 height = 1024
@@ -316,10 +316,10 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     sizes = []
     for i in range(0, len(x)):
         distance_to_line = abs(x[i] - y[i])
-        if distance_to_line < total_range / 36: 
+        if distance_to_line < total_range / 5: 
             col.append('blue')
             sizes.append(70)
-        elif distance_to_line < total_range / 18:
+        elif distance_to_line < total_range / 10:
             col.append('green')
             sizes.append(40)
         else: 
@@ -327,7 +327,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
             sizes.append(40)
 
 
-    plot_range = [-91, 91]
+    plot_range = [-92, 92]
     plt.figure(figsize=(7, 7))
     # Create a line plot of the data points and the linear regression line
     plt.scatter(x, y, alpha=0.5, s=sizes, color=col)
@@ -339,10 +339,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     plt.xlim(*plot_range)
     plt.ylim(*plot_range)
     # plt.title("Linear Regression")
-    plt.savefig(f'{curr_dir}/fit.png', dpi=600)
-
-
-
+    plt.savefig(curr_dir / 'fit.png', dpi=600)
+    plt.savefig(curr_dir / 'fit.pdf')
 
     # --------------------------------------------  PA ------------------------------------------------
     model2 = CNN()
@@ -462,8 +460,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     for i in range(N):
         hpxmap[indices[i]] = Fs[i]
     hp.mollview(hpxmap, title='Loss for inclination and PA')
-    plt.savefig(curr_dir / 'fits.png')
-
+    plt.savefig(curr_dir / 'skymap.png', dpi=600)
+    plt.savefig(curr_dir / 'skymap.pdf')
 
     # --------------------------------------------  Save Results ------------------------------------------------
     a = {
