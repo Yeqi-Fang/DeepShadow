@@ -46,10 +46,10 @@ class LinearNDInterpolatorExt(object):
       return t.item(0)
     else:
       return self.funcnearest(*args)
-
+# 14e-4, 15e-4,
 # 15.5e-4, 16e-4, 1
-angular_pixel_size_input_images = [16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 
-                                   9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4,
+    # 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4,
+angular_pixel_size_input_images = [
                                    1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4,
                                    1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
 num_imgaes = 100
@@ -67,7 +67,7 @@ BATCH_SIZE = 300
 DROPOUT_RATE = 0.5
 learning_rate = 1e-3
 weight_decay = 1e-4
-critical_mae = 20
+critical_mae = 39
 
 
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
@@ -90,10 +90,9 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     )
 
     data_set = Path('tele_datasets')
-    data_dirs = data_set.glob(f"reg_num{num_imgaes}_rect_wl{wl:.3e}_*{F}*{angular_pixel_size_input_image:.2e}*_BHSize{BH_lower}-{BH_upper}")
-
-    assert len(list(data_dirs)) != 0, 'Empty'
-    assert len(list(data_dirs)) == 1, "Please specify more parameters!"
+    data_dirs = list(data_set.glob(f"reg_num{num_imgaes}_rect_wl{wl:.3e}_*{F}*{angular_pixel_size_input_image:.2e}*_BHSize{BH_lower}-{BH_upper}"))
+    assert len(data_dirs) != 0, 'Empty'
+    assert len(data_dirs) == 1, "Please specify more parameters!"
     data_dir = data_dirs[0]
 
 
@@ -235,7 +234,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     df = pd.DataFrame({'epoch':[], 'train loss':[], 'test loss':[], 'test mae':[]})
     df.to_csv(curr_logs / 'results_inc.csv', index=False)
     name = curr_models / "final_inc.pth.tar"
-
+    name = Path('')
     for epoch in range(1, num_epochs + 1):
         train_loss = 0
         model1.train()
@@ -268,6 +267,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         test_loss /= test_batch_size
         print(f"Testing Loss:{test_loss:.4f}\tMAE:{test_mae:.3f}")
         if test_mae < mae_glo_inc and test_mae < critical_mae:
+            name.unlink(missing_ok=True)
             name = curr_models / f"epoch-{epoch}_MAE-{test_mae:.3f}_inc.pth.tar"
             print(f'MAE improve from {mae_glo_inc:.3f} to {test_mae:.3f}, saving model dict to {name}')
             mae_glo_inc = test_mae
