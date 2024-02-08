@@ -48,8 +48,8 @@ class LinearNDInterpolatorExt(object):
     else:
       return self.funcnearest(*args)
 
-
-angular_pixel_size_input_images = [15.5e-4, 16e-4, 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 
+# 15.5e-4, 16e-4, 1
+angular_pixel_size_input_images = [16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 
                                    9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4,
                                    1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4,
                                    1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
@@ -63,8 +63,8 @@ wl = 100e-9
 D = 6.5
 F = 131.4
 SIZE = 240
-num_epochs = 100
-BATCH_SIZE = 256
+num_epochs = 40
+BATCH_SIZE = 300
 DROPOUT_RATE = 0.5
 learning_rate = 1e-3
 weight_decay = 1e-4
@@ -170,13 +170,13 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     
     train_dataset1 = MyData(x_train1, y_train1, transform=train_transform)
     test_dataset1 = MyData(x_test1, y_test1, transform=test_transform)
-    train_loader1 = DataLoader(train_dataset1, batch_size=BATCH_SIZE, shuffle=False)
-    test_loader1 = DataLoader(test_dataset1, batch_size=BATCH_SIZE, shuffle=False)
+    train_loader1 = DataLoader(train_dataset1, batch_size=BATCH_SIZE, shuffle=False, drop_last=True)
+    test_loader1 = DataLoader(test_dataset1, batch_size=BATCH_SIZE, shuffle=False, drop_last=True)
 
     train_dataset2 = MyData(x_train2, y_train2, transform=train_transform)
     test_dataset2 = MyData(x_test2, y_test2, transform=test_transform)
-    train_loader2 = DataLoader(train_dataset2, batch_size=BATCH_SIZE, shuffle=False)
-    test_loader2 = DataLoader(test_dataset2, batch_size=BATCH_SIZE, shuffle=False)
+    train_loader2 = DataLoader(train_dataset2, batch_size=BATCH_SIZE, shuffle=False, drop_last=True)
+    test_loader2 = DataLoader(test_dataset2, batch_size=BATCH_SIZE, shuffle=False, drop_last=True)
 
 
 

@@ -41,6 +41,7 @@ logs_yolo/*
 !logs_yolo/results.xlsx
 
 tele_datasets/*
+!tele_datasets/reg*
 circle/
 yolov7/
 datasets/
