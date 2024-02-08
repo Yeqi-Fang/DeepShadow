@@ -261,7 +261,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     save_checkpoint(checkpoint, filename=f"{curr_models}/final.pth.tar")
 
 
-    best_model = os.listdir(curr_models)[-1]
+    best_model = os.listdir(curr_models)[-2]
     path_of_best_model = os.path.join(curr_models, best_model)
     model.load_state_dict(torch.load(path_of_best_model)['state_dict'])
 
