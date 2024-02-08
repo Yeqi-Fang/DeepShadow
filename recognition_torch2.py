@@ -49,7 +49,10 @@ class LinearNDInterpolatorExt(object):
       return self.funcnearest(*args)
 
 
-angular_pixel_size_input_images = [16.5e-4]
+angular_pixel_size_input_images = [15.5e-4, 16e-4, 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 
+                                   9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4,
+                                   1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4,
+                                   1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
 num_imgaes = 100
 height = 1024
 width = 1024
@@ -60,12 +63,12 @@ wl = 100e-9
 D = 6.5
 F = 131.4
 SIZE = 240
-num_epochs = 1
+num_epochs = 100
 BATCH_SIZE = 256
 DROPOUT_RATE = 0.5
 learning_rate = 1e-3
 weight_decay = 1e-4
-critical_mae = 50
+critical_mae = 20
 
 
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
@@ -356,7 +359,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         test_loss /= test_batch_size
         print(f"Testing Loss and MAE:{test_loss:.4f}")
         if test_loss < mae_glo_PA and test_loss < critical_mae:
-            name = curr_models / f"epoch-{epoch}_MAE/Loss-{test_loss:.3f}_PA.pth.tar"
+            name = curr_models / f"epoch-{epoch}_MAE-{test_loss:.3f}_PA.pth.tar"
             print(f'MAE improve from {mae_glo_PA:.3f} to {test_loss:.3f}, saving model dict to {name}')
             mae_glo_PA = test_loss
             checkpoint = {"state_dict": model2.state_dict(), "optimizer": optimizer.state_dict()}
@@ -423,7 +426,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     hpxmap = np.zeros(npix, dtype=np.float32)
     for i in range(N):
         hpxmap[indices[i]] = Fs[i]
-    hp.mollview(hpxmap)
+    hp.mollview(hpxmap, title='Loss for inclination and PA')
     plt.savefig(curr_dir / 'fits.png')
 
 
