@@ -23,6 +23,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from telescope_simulator import TelescopeSimulator
 from sklearn.model_selection import train_test_split
+from healpy.newvisufunc import projview, newprojplot
 from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 
@@ -49,8 +50,8 @@ class LinearNDInterpolatorExt(object):
 # 14e-4, 15e-4,
 # 15.5e-4, 16e-4, 1
     # 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4,
-                                #    1.5e-4, 2.5e-4, 3.5e-4, 
-angular_pixel_size_input_images = [4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4,
+                                #    1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 
+angular_pixel_size_input_images = [6.5e-4, 7.5e-4, 8.5e-4,
                                    1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
 num_imgaes = 100
 height = 1024
@@ -462,6 +463,34 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     plt.savefig(curr_dir / 'skymap.png', dpi=600)
     plt.savefig(curr_dir / 'skymap.pdf')
 
+    # classic healpy mollweide projections plot with graticule
+    projview(
+        hpxmap, coord=["G"], graticule=True, graticule_labels=True, projection_type="mollweide"
+    )
+    plt.savefig(curr_dir / 'skymap_grid.png', dpi=600)
+    plt.savefig(curr_dir / 'skymap_grid.pdf')
+
+    # polar view
+    projview(
+        hpxmap,
+        coord=["G"],
+        hold=False,
+        graticule=True,
+        graticule_labels=True,
+        flip="astro",
+        projection_type="polar",
+        unit="cbar label",
+        cb_orientation="horizontal",
+        override_plot_properties={
+            "cbar_shrink": 0.5,
+            "cbar_pad": 0.02,
+            "cbar_label_pad": -35,
+            "figure_width": 16,
+            "figure_size_ratio": 0.63,
+        },
+    );
+    plt.savefig(curr_dir / 'skymap_polar.png', dpi=600)
+    plt.savefig(curr_dir / 'skymap_polar.pdf')
     # --------------------------------------------  Save Results ------------------------------------------------
     a = {
         'Model_name': 'EfficientNet-B1',
