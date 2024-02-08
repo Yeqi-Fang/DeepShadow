@@ -50,9 +50,9 @@ class LinearNDInterpolatorExt(object):
 # 14e-4, 15e-4,
 # 15.5e-4, 16e-4, 1
     # 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4,
-                                #    1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 
-angular_pixel_size_input_images = [6.5e-4, 7.5e-4, 8.5e-4,
-                                   1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
+                                #    1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4,
+    # 6.5e-4, 7.5e-4, 8.5e-4, 1e-4,  
+angular_pixel_size_input_images = [2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
 num_imgaes = 100
 height = 1024
 width = 1024
@@ -68,7 +68,7 @@ BATCH_SIZE = 300
 DROPOUT_RATE = 0.5
 learning_rate = 1e-3
 weight_decay = 1e-4
-critical_mae = 39
+critical_mae = 100
 
 
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
@@ -316,10 +316,10 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     sizes = []
     for i in range(0, len(x)):
         distance_to_line = abs(x[i] - y[i])
-        if distance_to_line < total_range / 5: 
+        if distance_to_line < total_range / 10: 
             col.append('blue')
             sizes.append(70)
-        elif distance_to_line < total_range / 10:
+        elif distance_to_line < total_range / 5:
             col.append('green')
             sizes.append(40)
         else: 
@@ -392,6 +392,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         test_loss /= test_batch_size
         print(f"Testing Loss and MAE:{test_loss:.4f}")
         if test_loss < mae_glo_PA and test_loss < critical_mae:
+            name.unlink(missing_ok=True)
             name = curr_models / f"epoch-{epoch}_MAE-{test_loss:.3f}_PA.pth.tar"
             print(f'MAE improve from {mae_glo_PA:.3f} to {test_loss:.3f}, saving model dict to {name}')
             mae_glo_PA = test_loss
@@ -503,7 +504,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         'date': date_string,
         'Training Epoch': epoch,
         'Engine': 'PyTorch',
-        'Loss Function': loss_fn,
         'angular_pixel_size_input_image': angular_pixel_size_input_image,
         'para': 'Inc, PA'
     }
