@@ -80,14 +80,11 @@ def generate_image_reg_func(angular_pixel_size_input_image):
         loop = tqdm(enumerate(images), leave=False)
         for _, image_name in loop:
             if (image_name.split('.')[1] == 'png'):
-                # if i == 0:\
+                # if i == 0:
                 new_image = f'{i}_' + image_name
                 img_path = data_dir / new_image
-                print(img_path)
+                # print(img_path)
                 if not img_path.exists():
-                # print(os.path.join(data_dir, image_name))
-                # print(os.path.exists(os.path.join(data_dir, image_name)))
-                    
                     stars_config['BHs'] = image_name
                     img = BH_stars_img(**stars_config)
                     img.stars_gen()
@@ -116,7 +113,7 @@ def generate_image_reg_func(angular_pixel_size_input_image):
                     df.loc[image_name, 'size'] = img.BH_size
                     df.loc[image_name, 'PA'] = img.angle
                     df.loc[image_name, 'new_img'] = str(new_image)
-                    df.to_csv(f'{data_dir}/labels.csv')
+                    df.to_csv(f'{data_dir}/labels_{i}.csv')
         df_all = pd.concat([df_all, df], axis=0)
         df_all.to_csv(f'{data_dir}/labels.csv')
 
