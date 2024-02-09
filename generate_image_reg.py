@@ -68,48 +68,57 @@ def generate_image_reg_func(angular_pixel_size_input_image):
     df.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
     df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
     df.set_index('PhotoName', inplace=True)
-    # print(df)
+    df_all = pd.DataFrame(columns=df.columns)
 
-    images = os.listdir(image_directory)
-    loop = tqdm(enumerate(images), leave=False)
-    for i, image_name in loop:
-        if (image_name.split('.')[1] == 'png'):
-            # if i == 0:\
-            img_path = data_dir / image_name
-            if not img_path.exists():
-            # print(os.path.join(data_dir, image_name))
-            # print(os.path.exists(os.path.join(data_dir, image_name)))
-                
-                stars_config['BHs'] = image_name
-                img = BH_stars_img(**stars_config)
-                img.stars_gen()
-                img.BHs_gen(rotate=True)
-                noise_BHs = img.add_noise(img.stars_BHs_img, radius=0)
-                tele_config['input_image'] = noise_BHs
-                telescope_simulator = TelescopeSimulator(**tele_config)
-                output_img = telescope_simulator.generate_image(show=False)
-                img_size = tele_config['CCD_pixel_count']
-                x, y, r, _ = img.BH_lst[0] * img_size
-                x, y, r = int(x), int(y), int(r)
-                if (x-120) >= 0 and (x + 120) < img_size and (y-120) >= 0 and (y + 120) < img_size:
-                    pass
-                else:
-                    if x - 120 < 0:
-                        x = 120
-                    elif x + 120 >= img_size:
-                        x = img_size - 120 - 1
-                    if y - 120 < 0:
-                        y = 120
-                    elif y + 120 >= img_size:
-                        y = img_size - 120 - 1
-                xl, xr, yl, yr = x - 120, x + 120, y - 120, y + 120
-                new = output_img[yl: yr, xl: xr]
-                cv2.imwrite(os.path.join(data_dir, image_name), new)
-                df.loc[image_name, 'size'] = img.BH_size
-                df.loc[image_name, 'PA'] = img.angle
-                df.to_csv(f'{data_dir}/labels.csv')
-
-
+    for i in range(num_round):
+        df = pd.read_csv(csv_dir)
+        df.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
+        df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
+        df.set_index('PhotoName', inplace=True)
+        # print(df)
+        images = os.listdir(image_directory)
+        loop = tqdm(enumerate(images), leave=False)
+        for _, image_name in loop:
+            if (image_name.split('.')[1] == 'png'):
+                # if i == 0:\
+                new_image = f'{i}_' + image_name
+                img_path = data_dir / new_image
+                print(img_path)
+                if not img_path.exists():
+                # print(os.path.join(data_dir, image_name))
+                # print(os.path.exists(os.path.join(data_dir, image_name)))
+                    
+                    stars_config['BHs'] = image_name
+                    img = BH_stars_img(**stars_config)
+                    img.stars_gen()
+                    img.BHs_gen(rotate=True)
+                    noise_BHs = img.add_noise(img.stars_BHs_img, radius=0)
+                    tele_config['input_image'] = noise_BHs
+                    telescope_simulator = TelescopeSimulator(**tele_config)
+                    output_img = telescope_simulator.generate_image(show=False)
+                    img_size = tele_config['CCD_pixel_count']
+                    x, y, r, _ = img.BH_lst[0] * img_size
+                    x, y, r = int(x), int(y), int(r)
+                    if (x-120) >= 0 and (x + 120) < img_size and (y-120) >= 0 and (y + 120) < img_size:
+                        pass
+                    else:
+                        if x - 120 < 0:
+                            x = 120
+                        elif x + 120 >= img_size:
+                            x = img_size - 120 - 1
+                        if y - 120 < 0:
+                            y = 120
+                        elif y + 120 >= img_size:
+                            y = img_size - 120 - 1
+                    xl, xr, yl, yr = x - 120, x + 120, y - 120, y + 120
+                    new = output_img[yl: yr, xl: xr]
+                    cv2.imwrite(str(img_path), new)
+                    df.loc[image_name, 'size'] = img.BH_size
+                    df.loc[image_name, 'PA'] = img.angle
+                    df.loc[image_name, 'new_img'] = str(new_image)
+                    df.to_csv(f'{data_dir}/labels.csv')
+        df_all = pd.concat([df_all, df], axis=0)
+        df_all.to_csv(f'{data_dir}/labels.csv')
 
 
 
@@ -119,10 +128,13 @@ if __name__ == '__main__':
     # [1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4]
     # [9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4]
     # [15.5e-4, 16e-4, 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4]
-    angular_pixel_size_input_images = [6e-4, 7e-4, 8e-4, 9e-4, 10e-4, 11e-4, 12e-4, 13e-4]
+    # [14e-4, 15e-4, 15.5e-4, 16e-4, 0.5e-4, 0.6e-4, 0.7e-4, 0.8e-4, 0.9e-4]
+    # [1.1e-4 ,1.2e-4, 1.3e-4, 1.4e-4, 1.6e-4, 1.7e-4, 1.8e-4, 1.9e-4]
+    angular_pixel_size_input_images = [1.1e-4 ,1.2e-4, 1.3e-4, 1.4e-4, 1.6e-4, 1.7e-4, 1.8e-4, 1.9e-4]
     t1 = time.perf_counter()
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(generate_image_reg_func, angular_pixel_size_input_images)
+    # generate_image_reg_func(angular_pixel_size_input_images[0])
     t2 = time.perf_counter()
 
 
