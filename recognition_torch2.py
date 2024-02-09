@@ -77,6 +77,10 @@ critical_mae = 100
 
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
     try:
+        if angular_pixel_size_input_image < 2e-4:
+            loss_fn = nn.L1Loss()
+        else:
+            loss_fn = nn.MSELoss()
         print(f'starting ----------------------{angular_pixel_size_input_image:.3e}')
 
         # angular_pixel_size_input_image = 4e-4
@@ -224,7 +228,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         # --------------------------------------------  Inclination ------------------------------------------------
         model1 = CNN()
         model1.to(device)
-        loss_fn = nn.MSELoss()
+        # loss_fn = nn.MSELoss()
         optimizer = optim.Adam(model1.parameters(), lr=learning_rate, weight_decay=weight_decay)
         scaler = torch.cuda.amp.GradScaler()
         scheduler = StepLR(optimizer, step_size=10, gamma=0.2)
