@@ -51,9 +51,9 @@ class LinearNDInterpolatorExt(object):
 # 15.5e-4, 16e-4, 1
     # 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4,
                                 #    1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4,
-    # 6.5e-4, 7.5e-4, 8.5e-4, 1e-4,  
-angular_pixel_size_input_images = [1e-4, 2e-4, 3e-4, 4e-4, 5e-4,
-                                   1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4,
+    # 6.5e-4, 7.5e-4, 8.5e-4, 1e-4,
+
+angular_pixel_size_input_images = [0.5e-4, 0.6e-4, 0.7e-4, 0.8e-4, 0.9e-4, 8.5e-4,
                                    9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4, 14.5e-4,
                                    16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 
                                    6e-4, 7e-4, 8e-4, 9e-4, 10e-4, 11e-4, 12e-4, 13e-4]
@@ -100,7 +100,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         )
 
         data_set = Path('tele_datasets')
-        data_dirs = list(data_set.glob(f"reg_num{num_imgaes}_rect_wl{wl:.3e}_*{F}*{angular_pixel_size_input_image:.2e}*_BHSize{BH_lower}-{BH_upper}"))
+        data_dirs = list(data_set.glob(f"*wl{wl:.3e}_*{F}*{angular_pixel_size_input_image:.2e}*_BHSize{BH_lower}-{BH_upper}"))
         assert len(data_dirs) != 0, 'Empty'
         assert len(data_dirs) == 1, "Please specify more parameters!"
         data_dir = data_dirs[0]
@@ -443,7 +443,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         real_PA = y_full_PA.squeeze().cpu().numpy()
         df = pd.DataFrame({'Pred_inc': pred_inc, 'Pred_PA': pred_PA, 
                         'Real_inc': real_inc, 'Real_PA':real_PA})
-        df.to_csv(curr_dir / f'acc:{mae:.3f}.csv', index=False)
+        df.to_csv(curr_dir / f'acc-s{mae:.3f}.csv', index=False)
         err_inc = np.radians(np.abs(pred_inc - real_inc))
         real_PA = y_full_PA.squeeze()
         pred_PA = y_pred_full_PA.squeeze()
