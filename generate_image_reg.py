@@ -70,7 +70,7 @@ def generate_image_reg_func(angular_pixel_size_input_image):
     df.set_index('PhotoName', inplace=True)
     df_all = pd.DataFrame(columns=df.columns)
 
-    for _ in range(num_round):
+    for i in range(num_round):
         df = pd.read_csv(csv_dir)
         df.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
         df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
@@ -78,10 +78,12 @@ def generate_image_reg_func(angular_pixel_size_input_image):
         # print(df)
         images = os.listdir(image_directory)
         loop = tqdm(enumerate(images), leave=False)
-        for i, image_name in loop:
+        for _, image_name in loop:
             if (image_name.split('.')[1] == 'png'):
                 # if i == 0:\
-                img_path = data_dir / image_name
+                new_image = f'{i}_' + image_name
+                img_path = data_dir / new_image
+                print(img_path)
                 if not img_path.exists():
                 # print(os.path.join(data_dir, image_name))
                 # print(os.path.exists(os.path.join(data_dir, image_name)))
@@ -110,11 +112,13 @@ def generate_image_reg_func(angular_pixel_size_input_image):
                             y = img_size - 120 - 1
                     xl, xr, yl, yr = x - 120, x + 120, y - 120, y + 120
                     new = output_img[yl: yr, xl: xr]
-                    cv2.imwrite(os.path.join(data_dir, image_name), new)
+                    cv2.imwrite(str(img_path), new)
                     df.loc[image_name, 'size'] = img.BH_size
                     df.loc[image_name, 'PA'] = img.angle
+                    df.loc[image_name, 'new_img'] = str(new_image)
                     df.to_csv(f'{data_dir}/labels.csv')
-            df_all = pd.concat([df_all, df], axis=0)
+        df_all = pd.concat([df_all, df], axis=0)
+        df_all.to_csv(f'{data_dir}/labels.csv')
 
 
 
@@ -125,10 +129,12 @@ if __name__ == '__main__':
     # [9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4]
     # [15.5e-4, 16e-4, 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4]
     # [14e-4, 15e-4, 15.5e-4, 16e-4, 0.5e-4, 0.6e-4, 0.7e-4, 0.8e-4, 0.9e-4]
-    angular_pixel_size_input_images = [1.1e-4 ,1.2e-4, 1.3e-4, 1.4e-4, 1.6e-4, 1.7e-4, 1.8e-4, 1.9e-4]
+    # [1.1e-4 ,1.2e-4, 1.3e-4, 1.4e-4, 1.6e-4, 1.7e-4, 1.8e-4, 1.9e-4]
+    angular_pixel_size_input_images = [1.1e-4]
     t1 = time.perf_counter()
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        executor.map(generate_image_reg_func, angular_pixel_size_input_images)
+    # with concurrent.futures.ProcessPoolExecutor() as executor:
+    #     executor.map(generate_image_reg_func, angular_pixel_size_input_images)
+    generate_image_reg_func(angular_pixel_size_input_images[0])
     t2 = time.perf_counter()
 
 
