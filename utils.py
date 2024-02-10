@@ -1,7 +1,11 @@
 import glob as glob
 import matplotlib.pyplot as plt
 import cv2
+import numpy as np
+import torch
 import random
+from healpy.newvisufunc import projview, newprojplot
+from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
 
 
 def hex_to_rgb(hex_color):
@@ -22,6 +26,26 @@ def hex_to_rgb(hex_color):
     b = int(hex_color[4:6], 16)
 
     return b, g, r
+
+
+def angle_loss(output, target):
+    # output_angle = output * torch.pi / 180
+    # target_angle = target * torch.pi / 180
+    # loss = torch.mean((torch.cos(output_angle) - torch.cos(target_angle))**2 + \
+    #                   (torch.sin(output_angle) - torch.sin(target_angle))**2)
+    loss = torch.mean(torch.min(torch.abs(output - target), torch.abs(360 + output - target)))
+    return loss
+
+class LinearNDInterpolatorExt(object):
+    def __init__(self, points,values):
+        self.funcinterp = LinearNDInterpolator(points,values)
+        self.funcnearest = NearestNDInterpolator(points,values)
+    def __call__(self,*args):
+        t = self.funcinterp(*args)
+        if not np.isnan(t):
+            return t.item(0)
+        else:
+            return self.funcnearest(*args)
 
 
 class_names = ['star', 'BH']

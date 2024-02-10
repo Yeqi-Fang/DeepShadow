@@ -24,29 +24,7 @@ from torch.utils.tensorboard import SummaryWriter
 from telescope_simulator import TelescopeSimulator
 from sklearn.model_selection import train_test_split
 from healpy.newvisufunc import projview, newprojplot
-from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
-from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 
-
-
-def angle_loss(output, target):
-    # output_angle = output * torch.pi / 180
-    # target_angle = target * torch.pi / 180
-    # loss = torch.mean((torch.cos(output_angle) - torch.cos(target_angle))**2 + \
-    #                   (torch.sin(output_angle) - torch.sin(target_angle))**2)
-    loss = torch.mean(torch.min(torch.abs(output - target), torch.abs(360 + output - target)))
-    return loss
-
-class LinearNDInterpolatorExt(object):
-  def __init__(self, points,values):
-    self.funcinterp = LinearNDInterpolator(points,values)
-    self.funcnearest = NearestNDInterpolator(points,values)
-  def __call__(self,*args):
-    t = self.funcinterp(*args)
-    if not np.isnan(t):
-      return t.item(0)
-    else:
-      return self.funcnearest(*args)
 # 14e-4, 15e-4,
 # 15.5e-4, 16e-4, 1
     # 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 9.5e-4, 10.5e-4, 11.5e-4, 12.5e-4, 13.5e-4,
@@ -513,6 +491,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
             'date': date_string,
             'Training Epoch': epoch,
             'Engine': 'PyTorch',
+            'Loss Function': str(loss_fn),
             'angular_pixel_size_input_image': angular_pixel_size_input_image,
             'para': 'Inc, PA'
         }

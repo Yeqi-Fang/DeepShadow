@@ -1,14 +1,13 @@
-
-from stars import BH_stars_img
-from telescope_simulator import TelescopeSimulator
-import json
-import cv2
 import os
+import cv2
+import json
 import time
 import pandas as pd
-from tqdm import tqdm
 import concurrent.futures
+from tqdm import tqdm
 from pathlib import Path
+from stars import BH_stars_img
+from telescope_simulator import TelescopeSimulator
 
 
 num_round = 3
