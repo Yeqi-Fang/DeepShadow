@@ -10,6 +10,7 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import subprocess
+from pathlib import Path
 import pandas as pd
 now = datetime.datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -63,28 +64,20 @@ def set_res_dir():
         RES_DIR = f"results_{res_dir_count}"
     return RES_DIR
 
-
-%tensorboard --logdir yolov5/runs/train
-
-
-%cd yolov5
-
-
 RES_DIR = set_res_dir()
 # yolov5s.pt
 yaml = os.path.join(data_dir, 'data.yaml')
 if TRAIN:
-    !python train.py --data ../{yaml} --weights yolov5s.pt --img {size} --epochs {EPOCHS} \
-    --batch-size {batch_size} --name {RES_DIR} --cache
+    subprocess.run(f'python train.py --data ../{yaml} --weights yolov5s.pt --img {size} --epochs {EPOCHS} '
+                   f'--batch-size {batch_size} --name {RES_DIR} --cache', cwd='yolov5', capture_output=True)
 else:
     subprocess.run(f'python train.py --weights yolov5s.pt --data {data_dir}/data.yaml --img {size}'
-                   f'--batch-size {batch_size} --name {RES_DIR} --evolve 1000 --cache', shell=True, capture_output=True)
-# p.wait()
-
+                   f'--batch-size {batch_size} --name {RES_DIR} --evolve 1000 --cache', cwd='yolov5', capture_output=True)
 
 # Function to show validation predictions saved during training.
 def show_valid_results(RES_DIR):
-    !ls runs/train/{RES_DIR}
+    # !ls runs/train/{RES_DIR}
+    print(os.listdir(f"runs/train/{RES_DIR}"))
     EXP_PATH = f"runs/train/{RES_DIR}"
     validation_pred_images = glob.glob(f"{EXP_PATH}/*_pred.jpg")
     print(validation_pred_images)
@@ -104,8 +97,8 @@ def inference(RES_DIR, data_path):
     INFER_DIR = f"inference_{infer_dir_count+1}"
     print(INFER_DIR)
     # Inference on images.
-    !python detect.py --weights runs/train/{RES_DIR}/weights/best.pt \
-    --source {data_path} --name {INFER_DIR}
+    subprocess.run(f'python detect.py --weights runs/train/{RES_DIR}/weights/best.pt '
+                   f'--source {data_path} --name {INFER_DIR}', cwd='yolov5', capture_output=True)
     return INFER_DIR
 
 
@@ -120,9 +113,6 @@ def visualize(INFER_DIR):
         plt.imshow(image[:, :, ::-1])
         plt.axis('off')
         plt.show()
-
-
-RES_DIR
 
 
 try:
@@ -146,10 +136,6 @@ t2 = time.perf_counter()
 
 
 shutil.move('runs/', f'../{curr_dir}')
-
-
-curr_dir
-
 
 result = pd.read_csv(glob.glob(f'../{curr_dir}/**/*/results*.csv', recursive=True)[-1])
 result.columns = result.columns.str.strip()
@@ -208,10 +194,6 @@ a = {
 df = pd.read_excel('../logs_yolo/results.xlsx')
 df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
 df.to_excel('../logs_yolo/results.xlsx', index=False)
-
-
-df
-
 
 
 
