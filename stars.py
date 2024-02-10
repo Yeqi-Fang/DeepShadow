@@ -8,7 +8,7 @@ class BH_stars_img():
 
     def __init__(self, BHs_path='../224', BHs=None, height=1000, width=1400, bg_color=33, 
                  num_stars=200, num_BHs=10, stars_lower_size=10, stars_upper_size=25,
-                 BHS_lower_size=10, BH_upper_size=30, shape='rect'):
+                 BHS_lower_size=10, BH_upper_size=30, shape='rect', gaussian_radius=3):
         """_summary_
 
         Args:
@@ -43,6 +43,7 @@ class BH_stars_img():
         self.BHS_lower_size = BHS_lower_size
         self.BH_upper_size = BH_upper_size
         self.shape = shape
+        self.gaussian_radius = gaussian_radius
         # sanity check
         assert self.shape in ['rect', 'circle'], "Only support squares and circles !!!"
         if self.shape == 'circle':

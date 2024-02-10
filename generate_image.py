@@ -9,7 +9,7 @@ from tqdm import tqdm
 import glob
 import time
 import concurrent.futures
-
+import shutil
 
 
 num_stars = 10
@@ -19,6 +19,7 @@ height = 3072
 width = 3072
 shape = 'rect'
 mode = 'train_val'
+noise_radius = 3
 # img_lab
 # csv
 
@@ -46,10 +47,6 @@ def generate_image_func(angular_pixel_size_input_image):
     # data_dir = f'stars{num_stars}_BH{num_BHs}_num{num_imgaes}_{shape}_wl{tele_config["wavelength"]:.3e}_D{tele_config["telescope_diameter_m"]:.2f}_F{tele_config["telescope_diameter_m"]}_BHSize{stars_config["BHS_lower_size"]}:{stars_config["BH_upper_size"]}'
 
 
-    data_dir
-
-
-    import shutil
     if mode == 'train_val':
         try:
             os.mkdir(f'{data_dir}')
@@ -107,7 +104,7 @@ def generate_image_func(angular_pixel_size_input_image):
         img = BH_stars_img(**stars_config)
         img.stars_gen()
         img.BHs_gen()
-        noise_BHs = img.add_noise(img.stars_BHs_img, radius=0)
+        noise_BHs = img.add_noise(img.stars_BHs_img, radius=noise_radius)
         tele_config['input_image'] = noise_BHs
         telescope_simulator = TelescopeSimulator(**tele_config)
         code = uuid.uuid4()
@@ -133,7 +130,7 @@ def generate_image_func(angular_pixel_size_input_image):
         img = BH_stars_img(**stars_config)
         img.stars_gen()
         img.BHs_gen()
-        noise_BHs = img.add_noise(img.stars_BHs_img, radius=5)
+        noise_BHs = img.add_noise(img.stars_BHs_img, radius=noise_radius)
         tele_config['input_image'] = noise_BHs
         telescope_simulator = TelescopeSimulator(**tele_config)
         code = uuid.uuid4()
