@@ -106,6 +106,7 @@ class BH_stars_img():
         Returns:
             _type_: _description_
         """        
+        img = img.astype(np.int64)
         noisy_img = img + np.random.normal(loc=0, scale=radius, size=(self.height, self.width))
         noisy_img = np.where(noisy_img > 255, 255, noisy_img)
         noisy_img = np.where(noisy_img < 0, 0, noisy_img)
@@ -249,15 +250,15 @@ class BH_stars_img():
 if __name__ == '__main__':
 
     img_arr = cv2.imread('tele_datasets/224/20240108150459_4eae584618014ddca128ea99277295e2.png', 0)
-    img = BH_stars_img(BHs_path='tele_datasets/224/', BHs=img_arr, num_stars=0, num_BHs=1, stars_lower_size=25, stars_upper_size=35,
-                       BHS_lower_size=256, BH_upper_size=257, height=700, width=700, bg_color=0, shape='rect')
+    img = BH_stars_img(BHs_path='tele_datasets/224/', BHs=img_arr, num_stars=10, num_BHs=1, stars_lower_size=30, stars_upper_size=50,
+                       BHS_lower_size=30, BH_upper_size=50, height=700, width=700, bg_color=0, shape='rect')
     img.stars_gen()
     img.save('stars/stars.png')
-    noise_stars = img.add_noise(img.stars_BHs_img, radius=7)
+    noise_stars = img.add_noise(img.stars_BHs_img, radius=10)
     cv2.imwrite('stars/noisy_stars.png', noise_stars)
     img.BHs_gen()
     img.save('stars/BHs.png')
-    noise_BHs = img.add_noise(img.stars_BHs_img, radius=7)
+    noise_BHs = img.add_noise(img.stars_BHs_img, radius=10)
     cv2.imwrite('stars/noisy_BHs.png', noise_BHs)
     # plt.imshow(img.stars_BHs_img, cmap='gray')
     # plt.show()

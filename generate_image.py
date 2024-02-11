@@ -10,16 +10,17 @@ import glob
 import time
 import concurrent.futures
 import shutil
+import numpy as np
 
 
 num_stars = 10
 num_BHs = 1
-num_imgaes = 1000
+num_imgaes = 3000
 height = 3072
 width = 3072
 shape = 'rect'
 mode = 'train_val'
-noise_radius = 3
+noise_radius = 10
 # img_lab
 # csv
 
@@ -104,8 +105,8 @@ def generate_image_func(angular_pixel_size_input_image):
         img = BH_stars_img(**stars_config)
         img.stars_gen()
         img.BHs_gen()
-        noise_BHs = img.add_noise(img.stars_BHs_img, radius=noise_radius)
-        tele_config['input_image'] = noise_BHs
+        # noise_BHs = img.add_noise(img.stars_BHs_img, radius=noise_radius)
+        tele_config['input_image'] = img.stars_BHs_img
         telescope_simulator = TelescopeSimulator(**tele_config)
         code = uuid.uuid4()
         if mode == 'train_val':
@@ -121,7 +122,13 @@ def generate_image_func(angular_pixel_size_input_image):
             txt_path = f"{data_dir}/labels/BHs_{code}.txt"
         # print(i)
         output_img = telescope_simulator.generate_image(show=False)
-        cv2.imwrite(bh_path, output_img)
+        output_img = output_img.astype(np.int64)
+        noisy_img = output_img + np.random.normal(loc=0, scale=noise_radius, size=(height, width))
+        noisy_img = np.where(noisy_img > 255, 255, noisy_img)
+        noisy_img = np.where(noisy_img < 0, 0, noisy_img)
+        noisy_img = noisy_img.astype(np.uint8)
+        noisy_img = cv2.resize(noisy_img, (1024, 1024))
+        cv2.imwrite(bh_path, noisy_img)
         img.txtGen(txt_path=txt_path)
 
 
@@ -130,8 +137,8 @@ def generate_image_func(angular_pixel_size_input_image):
         img = BH_stars_img(**stars_config)
         img.stars_gen()
         img.BHs_gen()
-        noise_BHs = img.add_noise(img.stars_BHs_img, radius=noise_radius)
-        tele_config['input_image'] = noise_BHs
+        # noise_BHs = img.add_noise(img.stars_BHs_img, radius=noise_radius)
+        tele_config['input_image'] = img.stars_BHs_img
         telescope_simulator = TelescopeSimulator(**tele_config)
         code = uuid.uuid4()
         if mode == 'train_val':
@@ -146,7 +153,13 @@ def generate_image_func(angular_pixel_size_input_image):
             txt_path = f"{data_dir}/labels/BHs_{code}.txt"
         # cv2.imwrite(bh_path, noise_BHs)
         output_img = telescope_simulator.generate_image(show=False)
-        cv2.imwrite(bh_path, output_img)
+        output_img = output_img.astype(np.int64)
+        noisy_img = output_img + np.random.normal(loc=0, scale=noise_radius, size=(height, width))
+        noisy_img = np.where(noisy_img > 255, 255, noisy_img)
+        noisy_img = np.where(noisy_img < 0, 0, noisy_img)
+        noisy_img = noisy_img.astype(np.uint8)
+        noisy_img = cv2.resize(noisy_img, (1024, 1024))
+        cv2.imwrite(bh_path, noisy_img)
         img.txtGen(txt_path=txt_path)
 
 
@@ -156,18 +169,18 @@ def generate_image_func(angular_pixel_size_input_image):
 
 
 
-    img_lst = glob.glob(f'{data_dir}/*/*/*.png')
+    # img_lst = glob.glob(f'{data_dir}/*/*/*.png')
 
 
-    for img_name in tqdm(img_lst):
-        img = cv2.imread(img_name, cv2.IMREAD_GRAYSCALE)
-        img_resize = cv2.resize(img, (1024, 1024))
-        cv2.imwrite(img_name, img_resize)
+    # for img_name in tqdm(img_lst):
+    #     img = cv2.imread(img_name, cv2.IMREAD_GRAYSCALE)
+    #     img_resize = cv2.resize(img, (1024, 1024))
+    #     cv2.imwrite(img_name, img_resize)
 
 
 
 if __name__ == '__main__':
-    angular_pixel_size_input_images = [6e-4, 7e-4, 8e-4, 9e-4, 10e-4, 11e-4, 12e-4, 13e-4]
+    angular_pixel_size_input_images = np.arange(5e-5, 2e-4, 1e-5)
     t1 = time.perf_counter()
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(generate_image_func, angular_pixel_size_input_images)
@@ -175,3 +188,4 @@ if __name__ == '__main__':
     with open('tele_datasets/records.txt', 'a') as f:
         for i in angular_pixel_size_input_images:
             f.write(f'{i:2e}\n')
+
