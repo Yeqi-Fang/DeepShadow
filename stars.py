@@ -251,7 +251,7 @@ if __name__ == '__main__':
 
     img_arr = cv2.imread('tele_datasets/224/20240108150459_4eae584618014ddca128ea99277295e2.png', 0)
     img = BH_stars_img(BHs_path='tele_datasets/224/', BHs=img_arr, num_stars=10, num_BHs=1, stars_lower_size=30, stars_upper_size=50,
-                       BHS_lower_size=30, BH_upper_size=50, height=700, width=700, bg_color=0, shape='rect')
+                       BHS_lower_size=256, BH_upper_size=257, height=700, width=700, bg_color=0, shape='rect')
     img.stars_gen()
     img.save('stars/stars.png')
     noise_stars = img.add_noise(img.stars_BHs_img, radius=10)

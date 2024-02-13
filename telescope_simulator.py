@@ -125,7 +125,7 @@ class TelescopeSimulator():
         if show:
             plt.imshow(intensity_image)
             plt.show()
-
+            plt.savefig('intensity_image.pdf', dpi=600)    
         return intensity_image
 
     def get_convolved_image(self, im_array, intensity_image, show=True):
@@ -139,6 +139,7 @@ class TelescopeSimulator():
         Returns:
             np.array: image after convolving
         """        
+        print(im_array.shape, intensity_image.shape)
         convolved_array_shape = np.shape(signal.convolve(im_array, intensity_image*(1/np.max(intensity_image)))) #this line carries out a test convolution to get the shape of the convolved arrays for the variable convolved_array
 
         convolved_array = np.zeros((convolved_array_shape[0],convolved_array_shape[1])) 
@@ -193,21 +194,22 @@ class TelescopeSimulator():
 
 if __name__ == '__main__':
     # physical parameters
-    input_image = r"./stars/BHs.png"
+    input_image = r"./stars/img_paper/BHs.png"
+    im_array = cv2.imread(input_image, cv2.IMREAD_GRAYSCALE)
     telescope_diameter_m = 6.5  # in meters
     telescope_focal_length_m = 131.4  # in meters
     wavelength = 2000e-9  # in meters
-    CCD_pixel_count = 700  # The pixel width of your simulated CCD
-    show = False
-    pixel_size_input_image = 0.002
+    CCD_pixel_count = im_array.shape[0]  # The pixel width of your simulated CCD
+    show = True
+    pixel_size_input_image = 0.006
     CCD_pixel_size =  pixel_size_input_image * telescope_focal_length_m / 206265 # in meters
-    img = Image.open(input_image)
-    im_array = np.asarray(img)
     telescope_simulator = TelescopeSimulator(im_array, telescope_diameter_m,telescope_focal_length_m,
         wavelength, pixel_size_input_image, CCD_pixel_size,CCD_pixel_count, show
     )
-
+    intensity_image = telescope_simulator.get_intensity(im_array, show=show)
+    conv_image = telescope_simulator.get_convolved_image(im_array, intensity_image, show=show)
+    
     output_img = telescope_simulator.generate_image()
     # import datetime
     # now = datetime.datetime.time()
-    cv2.imwrite(f'stars/conv{pixel_size_input_image}.png', output_img)
+    cv2.imwrite(f'stars/conv_test_{pixel_size_input_image}.png', output_img)
