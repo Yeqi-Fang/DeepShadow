@@ -66,6 +66,7 @@ class TelescopeSimulator():
             im_array = input_image
 
         if np.shape(im_array)[0] != np.shape(im_array)[1]:
+
             min_dim, max_dim = np.min((np.shape(im_array)[0], np.shape(im_array)[1])), np.max((np.shape(im_array)[0], np.shape(im_array)[1]))
             pixels_to_crop = max_dim - min_dim
             if np.shape(im_array)[0] > np.shape(im_array)[1]:
@@ -75,7 +76,7 @@ class TelescopeSimulator():
             if np.shape(im_array)[0] < np.shape(im_array)[1]:
                 left, right = np.floor(pixels_to_crop/2), np.shape(im_array)[1] - np.ceil(pixels_to_crop/2)
                 top, bottom = 0, np.shape(im_array)[0]
-
+            im = Image.fromarray(im_array)
             im = im.crop((left, top, right, bottom))
             im_array = np.asarray(im)
         
