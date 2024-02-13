@@ -122,9 +122,9 @@ class BH_stars_img():
         bg = np.ones((self.height, self.width), dtype=np.float64) * self.bg_color / 255
         return bg
     
-    def stars_gen(self):
+    def stars_gen(self, color=False):
         """_summary_
-        """        
+        """
         bg = self.bg_gen()
         self.stars_BHs_img = bg.copy()
         if self.shape == 'rect': 
@@ -138,6 +138,8 @@ class BH_stars_img():
             sigma_y = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
             luminosity = (size - self.stars_lower_size) / (self.stars_upper_size - self.stars_lower_size) * \
                          np.random.uniform(0.5, 0.8)  # Maximum brightness at the center
+            if color:
+                pass
             brightness = self.generate_distribution(size, sigma_x, sigma_y, luminosity)
             larger_img, xc, yc = self.put_small_images_tolarge_background(brightness, self.height, self.width, size)
             self.stars_BHs_img += larger_img
@@ -151,7 +153,7 @@ class BH_stars_img():
         self.stars_BHs_img *= 255
         self.stars_BHs_img = self.stars_BHs_img.astype(np.int64)
         self.stars_lst = stars_lst
-    
+
     def BHs_gen(self, rotate=False):
         """_summary_
         """
@@ -202,7 +204,6 @@ class BH_stars_img():
         self.BH_lst = BH_lst
         self.BH_size = BH_size
 
-
         return self.stars_BHs_img
     def save(self, path):
         """_summary_
@@ -250,8 +251,8 @@ class BH_stars_img():
 if __name__ == '__main__':
 
     img_arr = cv2.imread('tele_datasets/224/20240108150459_4eae584618014ddca128ea99277295e2.png', 0)
-    img = BH_stars_img(BHs_path='tele_datasets/224/', BHs=img_arr, num_stars=10, num_BHs=1, stars_lower_size=30, stars_upper_size=50,
-                       BHS_lower_size=256, BH_upper_size=257, height=700, width=700, bg_color=0, shape='rect')
+    img = BH_stars_img(BHs_path='tele_datasets/224/', BHs=img_arr, num_stars=100, num_BHs=1, stars_lower_size=30, stars_upper_size=50,
+                       BHS_lower_size=30, BH_upper_size=50, height=3072, width=3072, bg_color=0, shape='rect')
     img.stars_gen()
     img.save('stars/stars.png')
     noise_stars = img.add_noise(img.stars_BHs_img, radius=10)

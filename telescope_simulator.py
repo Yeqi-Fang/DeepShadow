@@ -125,7 +125,7 @@ class TelescopeSimulator():
         if show:
             plt.imshow(intensity_image)
             plt.show()
-            plt.savefig('intensity_image.pdf', dpi=600)    
+            # plt.savefig('intensity_image.pdf', dpi=600)    
         return intensity_image
 
     def get_convolved_image(self, im_array, intensity_image, show=True):
@@ -139,7 +139,7 @@ class TelescopeSimulator():
         Returns:
             np.array: image after convolving
         """        
-        print(im_array.shape, intensity_image.shape)
+        # print(im_array.shape, intensity_image.shape)
         convolved_array_shape = np.shape(signal.convolve(im_array, intensity_image*(1/np.max(intensity_image)))) #this line carries out a test convolution to get the shape of the convolved arrays for the variable convolved_array
 
         convolved_array = np.zeros((convolved_array_shape[0],convolved_array_shape[1])) 
@@ -154,7 +154,7 @@ class TelescopeSimulator():
         
         return convolved_array
     
-    def generate_image(self, show=True):
+    def generate_image(self, convolved_array, show=True):
         """_summary_
 
         Args:
@@ -169,17 +169,17 @@ class TelescopeSimulator():
         CCD_pixel_count = self.CCD_pixel_count
         pixel_size_input_image = self.pixel_size_input_image
         
-        x_psf_samples = np.linspace(-pixel_size_input_image*len(self.convolved_array)/2, 
-                                    pixel_size_input_image*len(self.convolved_array)/2, len(self.convolved_array))
-        y_psf_samples = np.linspace(-pixel_size_input_image*len(self.convolved_array)/2, 
-                                    pixel_size_input_image*len(self.convolved_array)/2, len(self.convolved_array))
+        x_psf_samples = np.linspace(-pixel_size_input_image*len(convolved_array)/2, 
+                                    pixel_size_input_image*len(convolved_array)/2, len(convolved_array))
+        y_psf_samples = np.linspace(-pixel_size_input_image*len(convolved_array)/2, 
+                                    pixel_size_input_image*len(convolved_array)/2, len(convolved_array))
 
         x_CCD = np.linspace(-CCD_pixel_size*CCD_pixel_count/2, CCD_pixel_size*CCD_pixel_count/2, CCD_pixel_count)
         y_CCD = np.linspace(-CCD_pixel_size*CCD_pixel_count/2, CCD_pixel_size*CCD_pixel_count/2, CCD_pixel_count)
 
         output_image = np.zeros((CCD_pixel_count,CCD_pixel_count))
 
-        f = interpolate.interp2d(x_psf_samples, y_psf_samples, self.convolved_array, kind='cubic')
+        f = interpolate.interp2d(x_psf_samples, y_psf_samples, convolved_array, kind='cubic')
         output_image = f(x_CCD, y_CCD)
 
         output_image = np.uint8((output_image)*(255/np.max(output_image)))
@@ -201,15 +201,14 @@ if __name__ == '__main__':
     wavelength = 2000e-9  # in meters
     CCD_pixel_count = im_array.shape[0]  # The pixel width of your simulated CCD
     show = True
-    pixel_size_input_image = 0.006
+    pixel_size_input_image = 0.007
     CCD_pixel_size =  pixel_size_input_image * telescope_focal_length_m / 206265 # in meters
     telescope_simulator = TelescopeSimulator(im_array, telescope_diameter_m,telescope_focal_length_m,
         wavelength, pixel_size_input_image, CCD_pixel_size,CCD_pixel_count, show
     )
     intensity_image = telescope_simulator.get_intensity(im_array, show=show)
     conv_image = telescope_simulator.get_convolved_image(im_array, intensity_image, show=show)
-    
-    output_img = telescope_simulator.generate_image()
+    output_img = telescope_simulator.generate_image(conv_image)
     # import datetime
     # now = datetime.datetime.time()
     cv2.imwrite(f'stars/conv_test_{pixel_size_input_image}.png', output_img)
