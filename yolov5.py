@@ -23,7 +23,7 @@ t1 = time.perf_counter()
 
 
 TRAIN = True
-EPOCHS = 100
+EPOCHS = 10
 star = 10
 BH = 1
 num_photo = 3000
@@ -72,7 +72,7 @@ if TRAIN:
     subprocess.run(f'python train.py --data ../{yaml} --weights yolov5s.pt --img {size} --epochs {EPOCHS} '
                    f'--batch-size {batch_size} --name {RES_DIR} --cache', cwd='yolov5')
 else:
-    subprocess.run(f'python train.py --weights yolov5s.pt --data {data_dir}/data.yaml --img {size}'
+    subprocess.run(f'python train.py --weights yolov5s.pt --data ../{yaml} --img {size}'
                    f'--batch-size {batch_size} --name {RES_DIR} --evolve 1000 --cache', cwd='yolov5', capture_output=True)
 
 # Function to show validation predictions saved during training.
@@ -117,28 +117,28 @@ def visualize(INFER_DIR):
 
 
 try:
-    os.mkdir('../inference')
+    os.mkdir('inference')
 except FileExistsError:
-    shutil.rmtree('../inference')
-    os.mkdir('../inference')
+    shutil.rmtree('inference')
+    os.mkdir('inference')
 
 
 inference_lst = list(np.random.choice(os.listdir(f"{data_dir}/train/images"), 10))
 
 
 for i in inference_lst:
-    shutil.copy(f'./{data_dir}/train/images/{i}', f'../inference/{i}')
+    shutil.copy(f'{data_dir}/train/images/{i}', f'inference/{i}')
 
 
-inference(RES_DIR, './inference')
+inference(RES_DIR, 'inference')
 
 
 t2 = time.perf_counter()
 
 
-shutil.move('runs/', f'../{curr_dir}')
+shutil.move('yolov5/runs/', f'{curr_dir}')
 
-result = pd.read_csv(glob.glob(f'../{curr_dir}/**/*/results*.csv', recursive=True)[-1])
+result = pd.read_csv(glob.glob(f'{curr_dir}/**/*/results*.csv', recursive=True)[-1])
 result.columns = result.columns.str.strip()
 df_sorted = result.sort_values(by='metrics/mAP_0.5', ascending=False)
 best = df_sorted.iloc[0, :]
@@ -156,10 +156,10 @@ mAP_0595 = best['metrics/mAP_0.5:0.95']
 # !cat {data_dir}/tele_config.json
 
 
-with open(f"../{data_dir}/telescope_config.json", "r") as json_file:
+with open(f"{data_dir}/telescope_config.json", "r") as json_file:
     telescope_config = json.load(json_file)
 
-with open(f"../{data_dir}/stars_config.json", "r") as json_file:
+with open(f"{data_dir}/stars_config.json", "r") as json_file:
     stars_config = json.load(json_file)
 
 
@@ -192,9 +192,9 @@ a = {
     'CCD_pixel_count': telescope_config['CCD_pixel_count']
 }
 
-df = pd.read_excel('../logs_yolo/results.xlsx')
+df = pd.read_excel('logs_yolo/results.xlsx')
 df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
-df.to_excel('../logs_yolo/results.xlsx', index=False)
+df.to_excel('logs_yolo/results.xlsx', index=False)
 
 
 

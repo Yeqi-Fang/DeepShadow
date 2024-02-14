@@ -209,5 +209,5 @@ def labels_plot(image_paths, label_paths, num_samples, curr_dir):
     plt.subplots_adjust(wspace=0)
     plt.tight_layout()
     plt.savefig(f'{curr_dir}/label_plot.png', dpi=600)
-    plt.show()
+    # plt.show()
     
