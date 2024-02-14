@@ -50,7 +50,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     utils.labels_plot(
         image_paths=f'{data_dir}/train/images/*',
         label_paths=f'{data_dir}/train/labels/*',
-        num_samples=2, curr_dir=curr_dir
+        num_samples=2, SHOW=False, SAVE=True, save_dir=curr_dir
     )
 
     RES_DIR = utils.set_res_dir(TRAIN=TRAIN)

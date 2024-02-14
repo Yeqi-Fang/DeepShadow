@@ -169,7 +169,7 @@ def plot_circle(image, circles, labels):
 
 
 # Function to plot images with the bounding boxes.
-def labels_plot(image_paths, label_paths, num_samples, curr_dir):
+def labels_plot(image_paths, label_paths, num_samples, SHOW=False, SAVE=False, save_dir=None, num_circles=20, subplots_col=2):
     """_summary_
 
     Args:
@@ -185,8 +185,10 @@ def labels_plot(image_paths, label_paths, num_samples, curr_dir):
     all_training_labels.sort()
 
     num_images = len(all_training_images)
-
-    plt.figure(figsize=(12, 6))
+    if subplots_col >=2:
+        plt.figure(figsize=(12, 6))
+    else:
+        plt.figure(figsize=(6, 6))
     for i in range(num_samples):
         j = random.randint(0,num_images-1)
         image = cv2.imread(all_training_images[j])
@@ -194,7 +196,7 @@ def labels_plot(image_paths, label_paths, num_samples, curr_dir):
             bboxes = []
             labels = []
             label_lines = f.readlines()
-            for label_line in label_lines[:20]:
+            for label_line in label_lines[:num_circles]:
                 label = label_line[0]
                 bbox_string = label_line[2:]
                 x_c, y_c, w, h = bbox_string.split(' ')
@@ -205,13 +207,16 @@ def labels_plot(image_paths, label_paths, num_samples, curr_dir):
                 bboxes.append([x_c, y_c, w, h])
                 labels.append(label)
         result_image = plot_circle(image, bboxes, labels)
-        plt.subplot(1, 2, i+1)
+        plt.subplot(1, subplots_col, i+1)
         plt.imshow(result_image[:, :, ::-1])
         plt.axis('off')
     plt.subplots_adjust(wspace=0)
     plt.tight_layout()
-    plt.savefig(f'{curr_dir}/label_plot.png', dpi=600)
-    # plt.show()
+    if SAVE:
+        plt.savefig(save_dir / 'label_plot.png', dpi=600)
+        plt.savefig(save_dir / 'label_plot.pdf', dpi=600)
+    if SHOW:
+        plt.show()
     
 def set_res_dir(TRAIN):
     # Directory to store results

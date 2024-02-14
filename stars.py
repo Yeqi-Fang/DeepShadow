@@ -119,7 +119,7 @@ class BH_stars_img():
         Returns:
             _type_: _description_
         """        
-        bg = np.ones((self.height, self.width, 3), dtype=np.float64) * self.bg_color / 255
+        bg = np.ones((self.height, self.width), dtype=np.float64) * self.bg_color / 255
         return bg
     
     def stars_gen(self, color=False):
