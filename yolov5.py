@@ -34,6 +34,7 @@ BH_upper = 50
 wl = 100e-9
 D = 6.5
 F = 131.4
+angular_pixel_size_input_images = 
 angular_pixel_size_input_image = 5e-5
 
 
