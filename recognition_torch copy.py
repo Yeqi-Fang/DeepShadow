@@ -29,44 +29,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 
 
-def angle_loss(output, target):
-    # print(output.shape)
-    # loss = torch.mean(torch.min(torch.abs(output - target), torch.abs(360 + output - target)))
-    loss = torch.min(torch.abs(output - target), torch.abs(360 + output - target))
-    return loss
-
-def angle_loss_np(output, target):
-    print(output.shape)
-    print(target.shape)
-    loss = np.mean(np.min(np.abs(output - target), np.abs(360 + output - target)))
-    return loss
-
-def double_angle_loss(output, target):
-    # print(output.shape, target.shape)
-    out_inc, target_inc = output[:, 0], target[:, 0]
-
-    # loss1 = torch.mean(torch.abs(out_inc - target_inc))
-    # out_PA, target_PA = output[:, 1], target[:, 1]
-    # loss2 = torch.mean(torch.min(torch.abs(out_PA - target_PA), torch.abs(360 + out_PA - target_PA)))
-    # loss3 = torch.mean(torch.abs(out_PA - target_PA))
-    # loss = 2 * loss1 + loss2
-    loss1 = torch.mean((out_inc - target_inc)**2)
-    out_PA, target_PA = output[:, 1], target[:, 1]
-    loss2 = torch.mean(torch.min((out_PA - target_PA)**2, (360 + out_PA - target_PA)**2))
-    loss3 = torch.mean((out_PA - target_PA)**2)
-    loss = 6 * loss1 + loss2
-    return loss
-
-
-def double_angle_metric(output, target):
-    out_inc, target_inc = output[:, 0], target[:, 0]
-    loss1 = torch.mean(torch.abs(out_inc - target_inc))
-    out_PA, target_PA = output[:, 1], target[:, 1]
-    loss2 = torch.mean(torch.min(torch.abs(out_PA - target_PA), torch.abs(360 + out_PA - target_PA)))
-    return loss1, loss2
-
-
-angular_pixel_size_input_images = [1.1e-3]
+angular_pixel_size_input_images = [1.9e-4]
 # paras  = [['Inclination', 'PA']]
 paras  = ['size']
 num_imgaes = 3
@@ -164,10 +127,13 @@ for para in paras:
 
 
         # df.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
-        df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
+        try:
+            df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
+        except AttributeError as e:
+            # print(df.head())
+            df['PhotoName'] = df.new_img
         df.set_index('PhotoName', inplace=True)
-        df_sub = df[para]
-        inclination = df['Inclination']
+        size_series = df['size']
 
 
         images = os.listdir(data_dir)
@@ -183,10 +149,7 @@ for para in paras:
                 image_path = os.path.join(data_dir, image_name)
                 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
                 # print(df_sub)
-                try:
-                    label = df_sub.loc[image_name, :].to_list()
-                except pd.errors.IndexingError as e:
-                    label = df_sub.loc[image_name]
+                label = size_series.loc[image_name]
                 dataset.append(np.array(image))
                 labels.append(label)
                 indexes.append(image_name)
@@ -280,14 +243,7 @@ for para in paras:
 
         model = CNN(base=base, out_features=1)
         model.to(device)
-        if loss_fn == 'double':
-            criterion = double_angle_loss
-        elif loss_fn == 'angle':
-            criterion = angle_loss
-        elif loss_fn == 'mse':
-            criterion = nn.MSELoss()
-        else:
-            raise ValueError
+        criterion = nn.MSELoss()
         optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
         scaler = torch.cuda.amp.GradScaler()
         scheduler = StepLR(optimizer, step_size=10, gamma=0.2)
@@ -310,7 +266,7 @@ for para in paras:
             loop = tqdm(train_loader, leave=False)
             for batch_idx, (data, targets) in enumerate(loop):
                 data = data.to(device=device)
-                targets = targets.to(device=device).squeeze()
+                targets = targets.to(device=device)
                 with torch.cuda.amp.autocast():
                     scores = model(data)
                     loss = criterion(scores, targets)
@@ -324,60 +280,31 @@ for para in paras:
             train_loss /= train_batch_size
             print(f"Training Loss at epoch {epoch} is {train_loss:.4f}", end='\t')
             model.eval()
-            test_loss, test_metric1, test_metric2 = 0, 0, 0
+            test_loss, test_mae = 0, 0
             with torch.no_grad():
                 for x, y in test_loader:
                     x = x.to(device=device)
-                    y = y.to(device=device).squeeze()
+                    y = y.to(device=device)
                     y_pred = model(x)
                     test_loss += criterion(y_pred, y).item()
-                    if para == 'size' or para == 'Inclination':
-                        test_metric1 += torch.abs(y-y_pred).type(torch.float).sum().item()
-                        # metric is loss function it
-                    elif para == 'PA':
-                        # test_metric1 += angle_loss(y_pred, y)
-                        # metric is loss function it self
-                        pass
-                    elif para == ['Inclination', 'PA']:
-                        temp1, temp2 = double_angle_metric(y_pred, y)
-                        temp1, temp2 = temp1.item(), temp2.item()
-                        # print(temp1, temp2)
-                        test_metric1 += temp1 # mae for inclination
-                        test_metric2 += temp2 # mae for PA
-                    else:
-                        raise ValueError
-            test_metric1 /= test_data_size
-            test_metric2 /= test_data_size
+                    test_mae += torch.abs(y-y_pred).type(torch.float).sum().item()
+
+            test_mae /= test_data_size
             test_loss /= test_batch_size
 
-            if para == 'size' or para == 'Inclination' :
-                print(f"Testing Loss:{test_loss:.4f}\tMAE of {para}:{test_metric1:.3f}")
-            elif para == 'PA':
-                print(f"Testing Loss and periodic MAE of {para}:{test_loss:.4f}")
-            elif para == ['Inclination', 'PA']:
-                print(f"Testing Loss:{test_loss:.4f}\tMAE of {para[0]} and {para[1]} :{test_metric1:.3f} and {test_metric2:.3f}")
-            else:
-                raise ValueError
+            print(f"Testing Loss:{test_loss:.4f}\tMAE of {para}:{test_mae:.3f}")
             
-            if test_metric1 < mae_glo and test_metric1 < critical_mae:
-                name = f"{curr_models}/epoch-{epoch}_MAE-{test_metric1:.3f}.pth.tar"
-                print(f'MAE improve from {mae_glo:.3f} to {test_metric1:.3f}, saving model dict to {name}')
-                mae_glo = test_metric1
+            if test_mae < mae_glo and test_mae < critical_mae:
+                name = f"{curr_models}/epoch-{epoch}_MAE-{test_mae:.3f}.pth.tar"
+                print(f'MAE improve from {mae_glo:.3f} to {test_mae:.3f}, saving model dict to {name}')
+                mae_glo = test_mae
                 checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict()}
                 save_checkpoint(checkpoint, filename=name)
             writer.add_scalars("result/losses", {"train_loss": train_loss, "test_loss": test_loss}, step)
-            if para == 'size' or para == 'Inclination':
-                writer.add_scalar("result/metirc", test_metric1, step)
-            elif para == 'PA':
-                pass
-            elif para == ['Inclination', 'PA']:
-                writer.add_scalars("result/metirc", {'Inclination':test_metric1, 'PA': test_metric2}, step)
-            else:
-                raise ValueError
+            writer.add_scalar("result/metirc", test_mae, step)
             
             df_temp = pd.DataFrame({'epoch':[epoch], 'train loss':[train_loss],
-                                    'test loss':[test_loss], 'test_metric1':[test_metric1], 
-                                    'test_metric2':[test_metric2]})
+                                    'test loss':[test_loss], 'test_mae':[test_mae]})
             df_temp.to_csv(f'{curr_logs}/results.csv', mode='a', header=False)
             step += 1
         print(f'Finally best mae:{mae_glo:.3f}')
@@ -400,28 +327,16 @@ for para in paras:
             y_pred_full = torch.tensor([]).to(device=device)
             for x, y in test_loader:
                 x = x.to(device=device)
-                y = y.to(device=device).squeeze()
+                y = y.to(device=device)
                 y_pred = model(x)
                 y_full = torch.cat((y_full, y), 0)
                 y_pred_full = torch.cat((y_pred_full, y_pred), 0)
             loss = criterion(y_pred_full, y_full)
-            if para == 'size' or para == 'Inclination':
-                test_metric1 = torch.abs(y-y_pred).type(torch.float).sum().item()
-                # metric is loss function it self
-                mae = test_metric1 / test_data_size
-                print(f"整体测试集上的Loss: {loss:.4f}")
-                print(f"整体测试集上的MAE: {mae:.4f}")
-            elif para == 'PA':
-                # test_metric1 += angle_loss(y_pred, y)
-                # metric is loss function it self
-                print(f"整体测试集上的Loss and MAE: {loss:.4f}")
-            elif para == ['Inclination', 'PA']:
-                test_metric1, test_metric2 = double_angle_metric(y_pred, y)
-                test_metric1, test_metric2 = test_metric1.item(), test_metric2.item()
-                print(f"整体测试集上的Loss: {loss:.4f}")
-                print(f"整体测试集上的MAE, {para[0]}: {test_metric1:.4f}. {para[1]}: {test_metric2:.4f}")
-            else:
-                raise ValueError
+            test_mae = torch.abs(y-y_pred).type(torch.float).sum().item()
+            # metric is loss function it self
+            mae = test_mae / test_data_size
+            print(f"整体测试集上的Loss: {loss:.4f}")
+            print(f"整体测试集上的MAE: {mae:.4f}")
 
 
         model.train();
@@ -474,64 +389,7 @@ for para in paras:
             # plt.title("Linear Regression")
             plt.savefig(f'{curr_dir}/fit.png', dpi=600)
             plt.savefig(f'{curr_dir}/fit.pdf', dpi=600)
-        else:
-            pred_inc = y_pred_full[:, 0].squeeze().cpu().numpy()
-            pred_PA = y_pred_full[:, 1].squeeze().cpu().numpy()
-            real_inc = y_full[:, 0].squeeze().cpu().numpy()
-            real_PA = y_full[:, 1].squeeze().cpu().numpy()
-            df = pd.DataFrame({'Pred_inc': pred_inc, 'Pred_PA': pred_PA, 
-                               'Real_inc': real_inc, 'Real_PA':real_PA})
-            err_inc = np.radians(np.abs(pred_inc - real_inc))
-            real_PA = y_full[:, 1].squeeze()
-            pred_PA = y_pred_full[:, 1].squeeze()
-            err_PA = np.radians(angle_loss(pred_PA, real_PA).cpu().numpy())
-            print(err_PA.shape)
-            error = err_inc + err_PA
-            # lons, lats= np.radians(real_inc), np.radians(real_PA)
-            # ncrs = len(pred_inc)
-            # vecs = coord.ang2vec(lons, lats)
-            # fig, ax = skymap.scatter(vecs, c=error)
-            # plt.scatter(0, 0, s=10, c='red', marker='*')    # plot source in the center
-            # plt.savefig(f'{curr_dir}/fisher_single_source_10deg.png', bbox_inches='tight')
-            # plt.close()
-
-
-
-            # Set the number of sources and the coordinates for the input
-            nside = 16
-            npix = hp.nside2npix(nside)
-            # print(real_inc)
-            # print(max(real_inc), min(real_inc))
-            # Coordinates and the density field f
-            thetas = np.radians(real_inc + 90)
-            thetas[thetas > np.pi] = np.pi
-            phis = np.radians(real_PA.cpu().numpy())
-            # Thetas, Phis = np.meshgrid(thetas, phis)
-            # Fs = np.sin(Thetas) ** 2 * np.cos(Phis)
-            # N = 200000
-            fs = error
-            # th = np.random.uniform(0, np.pi, N)
-            # phi = np.random.uniform(0, 2*np.pi, N)
-            # interp_func = interp2d(thetas, phis, Fs, kind='linear')
-            # fs = interp_func(th, phi)
-            # fs = np.zeros(N)
-            # for i in range(len(th)):
-            #     fs[i] = interp_func(th[i], phi[i])
-
-            # fs = Fs.flatten()
-            # Go from HEALPix coordinates to indices
-            indices = hp.ang2pix(nside, thetas, phis)
-
-            # Initate the map and fill it with the values
-            hpxmap = np.zeros(npix, dtype=np.float32)
-            for i in range(len(fs)):
-                hpxmap[indices[i]] = fs[i]
-
-            # Inspect the map
-            hp.mollview(hpxmap)
-            plt.savefig(f'{curr_dir}/fits.png', dpi=600)
-
-        df.to_csv(f'{curr_dir}/{loss_fn}-{test_metric1:.3f}.csv')
+        df.to_csv(f'{curr_dir}/{loss_fn}-{test_mae:.3f}.csv')
 
 
 
