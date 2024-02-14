@@ -27,7 +27,7 @@ from torch.utils.tensorboard import SummaryWriter
 from telescope_simulator import TelescopeSimulator
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
-
+sns.set_theme(style="whitegrid")
 
 angular_pixel_size_input_images = [1.9e-4]
 # paras  = [['Inclination', 'PA']]
@@ -340,8 +340,22 @@ for para in paras:
 
 
         model.train();
-
-
+        df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
+        x = df.Pred
+        y = df.Real
+        fig, ax = plt.subplots(figsize=(7, 7))
+        sns.violinplot(x=df.Real.astype(int), y=df.Pred, inner=None, ax=ax)
+        newax = fig.add_axes(ax.get_position(), frameon=False)
+        x = np.arange(64, 75)
+        y = x
+        newax.plot(x, y, 'o-', color='#FFC75F', markersize=6, lw=2)
+        newax.grid(False)
+        ax.set_ylim(61, 77)
+        newax.set_ylim(61, 77)
+        ax.set_xlabel('Real size of black hole (px)')
+        ax.set_ylabel('Predicted distribution of the size (px)')
+        plt.savefig(f'{curr_dir}/violin.png', dpi=600)
+        plt.savefig(f'{curr_dir}/violin.pdf', dpi=600)
         df.to_csv(f'{curr_dir}/{loss_fn}-{test_mae:.3f}.csv')
 
 
