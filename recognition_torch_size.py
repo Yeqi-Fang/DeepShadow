@@ -344,14 +344,18 @@ for para in paras:
         x = df.Pred
         y = df.Real
         fig, ax = plt.subplots(figsize=(7, 7))
-        sns.violinplot(x=df.Real.astype(int), y=df.Pred, inner=None, ax=ax)
+        palette = sns.color_palette('mako_r', n_colors=13)
+        sns.violinplot(x=df.Real.astype(int), y=df.Pred, inner=None, ax=ax, palette=palette)
         newax = fig.add_axes(ax.get_position(), frameon=False)
         x = np.arange(64, 75)
         y = x
-        newax.plot(x, y, 'o-', color='#FFC75F', markersize=6, lw=2)
+        # with sns.set_theme(style="darkgrid"):
+        newax.plot(x, y, '-', color='#dcbe87', markersize=6, lw=2)
+        newax.plot(x, y, 'o', color='#FFC75F', markersize=6, lw=2)
         newax.grid(False)
-        ax.set_ylim(61, 77)
-        newax.set_ylim(61, 77)
+        # ax.set_xlim(60, 77)
+        ax.set_ylim(df.Pred.min() - 0.6, df.Pred.max() + 0.6)
+        newax.set_ylim(df.Pred.min() - 0.6, df.Pred.max() + 0.6)
         ax.set_xlabel('Real size of black hole (px)')
         ax.set_ylabel('Predicted distribution of the size (px)')
         plt.savefig(f'{curr_dir}/violin.png', dpi=600)
