@@ -341,54 +341,7 @@ for para in paras:
 
         model.train();
 
-        if type(para) == str:
-            df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
-            x = df.Pred
-            y = df.Real
 
-            if para == 'Inclination':
-                total_range = 180
-            elif para == 'size':
-                total_range = 11
-            elif para == 'PA':
-                total_range = 360
-
-            
-            col =[]
-            sizes = []
-            for i in range(0, len(x)):
-                distance_to_line = abs(x[i] - y[i])
-                if distance_to_line < total_range / 36: 
-                    col.append('blue')
-                    sizes.append(70)
-                elif distance_to_line < total_range / 18:
-                    col.append('green')
-                    sizes.append(40)
-                else: 
-                    col.append('magenta')
-                    sizes.append(40)
-
-
-            plt.figure(figsize=(7, 7))
-            # Create a line plot of the data points and the linear regression line
-            plt.scatter(x, y, alpha=0.5, s=sizes, color=col)
-            if para == 'Inclination':
-                plot_range = [-91, 91]
-            elif para == 'size':
-                plot_range = [63, 76]
-            elif para == 'PA':
-                plot_range = [-5, 365]
-
-            plt.plot(plot_range, plot_range, 'red', lw=2.5)
-
-            # Label the axes and title the plot
-            plt.xlabel(f"Predicted {para}")
-            plt.ylabel(f"Real {para}")
-            plt.xlim(*plot_range)
-            plt.ylim(*plot_range)
-            # plt.title("Linear Regression")
-            plt.savefig(f'{curr_dir}/fit.png', dpi=600)
-            plt.savefig(f'{curr_dir}/fit.pdf', dpi=600)
         df.to_csv(f'{curr_dir}/{loss_fn}-{test_mae:.3f}.csv')
 
 
