@@ -51,3 +51,8 @@ inference/
 .DB_Store
 yolov5/*
 
+
+spare/cmap_test
+spare/papershow/*.png
+stars/*.png
+spare/conv_show/*.png

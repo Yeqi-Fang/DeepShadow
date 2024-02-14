@@ -26,15 +26,16 @@ TRAIN = True
 EPOCHS = 100
 star = 10
 BH = 1
-num_photo = 1000
+num_photo = 3000
 batch_size = 16
 size = 1024
-BH_lower = 64
-BH_upper = 75
+BH_lower = 30
+BH_upper = 50
 wl = 100e-9
 D = 6.5
 F = 131.4
 angular_pixel_size_input_image = 5e-5
+
 
 
 data_dirs = glob.glob(f"tele_datasets/stars{star}_BH{BH}_num{num_photo}_rect_wl{wl:.3e}_*{F}"
@@ -69,7 +70,7 @@ RES_DIR = set_res_dir()
 yaml = os.path.join(data_dir, 'data.yaml')
 if TRAIN:
     subprocess.run(f'python train.py --data ../{yaml} --weights yolov5s.pt --img {size} --epochs {EPOCHS} '
-                   f'--batch-size {batch_size} --name {RES_DIR} --cache', cwd='yolov5', capture_output=True)
+                   f'--batch-size {batch_size} --name {RES_DIR} --cache', cwd='yolov5')
 else:
     subprocess.run(f'python train.py --weights yolov5s.pt --data {data_dir}/data.yaml --img {size}'
                    f'--batch-size {batch_size} --name {RES_DIR} --evolve 1000 --cache', cwd='yolov5', capture_output=True)
@@ -122,14 +123,14 @@ except FileExistsError:
     os.mkdir('../inference')
 
 
-inference_lst = list(np.random.choice(os.listdir(f"..\\{data_dir}\\train\\images"), 10))
+inference_lst = list(np.random.choice(os.listdir(f"{data_dir}/train/images"), 10))
 
 
 for i in inference_lst:
-    shutil.copy(f'../{data_dir}/train/images/{i}', f'../inference/{i}')
+    shutil.copy(f'./{data_dir}/train/images/{i}', f'../inference/{i}')
 
 
-inference(RES_DIR, '../inference')
+inference(RES_DIR, './inference')
 
 
 t2 = time.perf_counter()

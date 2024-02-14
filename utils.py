@@ -4,7 +4,10 @@ import cv2
 import numpy as np
 import torch
 import random
-from healpy.newvisufunc import projview, newprojplot
+try:
+    from healpy.newvisufunc import projview, newprojplot
+except:
+    pass
 from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
 
 
