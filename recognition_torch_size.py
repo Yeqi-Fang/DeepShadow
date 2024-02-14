@@ -27,7 +27,7 @@ from torch.utils.tensorboard import SummaryWriter
 from telescope_simulator import TelescopeSimulator
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
-
+sns.set_theme(style="whitegrid")
 
 angular_pixel_size_input_images = [1.9e-4]
 # paras  = [['Inclination', 'PA']]
@@ -42,7 +42,7 @@ wl = 100e-9
 D = 6.5
 F = 131.4
 SIZE = 240
-num_epochs = 10
+num_epochs = 1
 BATCH_SIZE = 256
 inc_c = 91
 DROPOUT_RATE = 0.2
@@ -340,55 +340,26 @@ for para in paras:
 
 
         model.train();
-
-        if type(para) == str:
-            df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
-            x = df.Pred
-            y = df.Real
-
-            if para == 'Inclination':
-                total_range = 180
-            elif para == 'size':
-                total_range = 11
-            elif para == 'PA':
-                total_range = 360
-
-            
-            col =[]
-            sizes = []
-            for i in range(0, len(x)):
-                distance_to_line = abs(x[i] - y[i])
-                if distance_to_line < total_range / 36: 
-                    col.append('blue')
-                    sizes.append(70)
-                elif distance_to_line < total_range / 18:
-                    col.append('green')
-                    sizes.append(40)
-                else: 
-                    col.append('magenta')
-                    sizes.append(40)
-
-
-            plt.figure(figsize=(7, 7))
-            # Create a line plot of the data points and the linear regression line
-            plt.scatter(x, y, alpha=0.5, s=sizes, color=col)
-            if para == 'Inclination':
-                plot_range = [-91, 91]
-            elif para == 'size':
-                plot_range = [63, 76]
-            elif para == 'PA':
-                plot_range = [-5, 365]
-
-            plt.plot(plot_range, plot_range, 'red', lw=2.5)
-
-            # Label the axes and title the plot
-            plt.xlabel(f"Predicted {para}")
-            plt.ylabel(f"Real {para}")
-            plt.xlim(*plot_range)
-            plt.ylim(*plot_range)
-            # plt.title("Linear Regression")
-            plt.savefig(f'{curr_dir}/fit.png', dpi=600)
-            plt.savefig(f'{curr_dir}/fit.pdf', dpi=600)
+        df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
+        x = df.Pred
+        y = df.Real
+        fig, ax = plt.subplots(figsize=(7, 7))
+        palette = sns.color_palette('mako_r', n_colors=13)
+        sns.violinplot(x=df.Real.astype(int), y=df.Pred, inner=None, ax=ax, palette=palette)
+        newax = fig.add_axes(ax.get_position(), frameon=False)
+        x = np.arange(64, 75)
+        y = x
+        # with sns.set_theme(style="darkgrid"):
+        newax.plot(x, y, '-', color='#dcbe87', markersize=6, lw=2)
+        newax.plot(x, y, 'o', color='#FFC75F', markersize=6, lw=2)
+        newax.grid(False)
+        # ax.set_xlim(60, 77)
+        ax.set_ylim(df.Pred.min() - 0.6, df.Pred.max() + 0.6)
+        newax.set_ylim(df.Pred.min() - 0.6, df.Pred.max() + 0.6)
+        ax.set_xlabel('Real size of black hole (px)')
+        ax.set_ylabel('Predicted distribution of the size (px)')
+        plt.savefig(f'{curr_dir}/violin.png', dpi=600)
+        plt.savefig(f'{curr_dir}/violin.pdf', dpi=600)
         df.to_csv(f'{curr_dir}/{loss_fn}-{test_mae:.3f}.csv')
 
 
