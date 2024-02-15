@@ -168,3 +168,5 @@ date,Model_name,MAE,Batch_size,Resolution,Dropout,lr,No. training,No. testing,In
 2024-02-15_01-42-34,EfficientNet-B1,0.613473916,256,240,0.2,0.001,21614,5404,,0.00012,100,PyTorch,mse,,size,,
 2024-02-15_03-11-34,EfficientNet-B1,0.743500479,256,240,0.2,0.001,21614,5404,,0.00013,100,PyTorch,mse,,size,,
 2024-02-15_09-50-20,EfficientNet-B1,0.68016581,256,240,0.2,0.001,21614,5404,,0.00014,100,PyTorch,mse,,size,,
+2024-02-15_11-28-49,EfficientNet-B1,0.749802246,256,240,0.2,0.001,21614,5404,,0.00016,100,PyTorch,mse,,size,,
+2024-02-15_13-02-25,EfficientNet-B1,0.57020631,256,240,0.2,0.001,21614,5404,,0.00017,100,PyTorch,mse,,size,,
