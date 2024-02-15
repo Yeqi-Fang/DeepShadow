@@ -315,7 +315,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         'lr': learning_rate,
         'date': date_string,
         'Training Epoch': epoch,
-        'Engine': 'PyTorch'
+        'Engine': 'PyTorch',
+        'angular_pixel_size_input_image': angular_pixel_size_input_image,
     }
     df = pd.read_csv('logs_classification/results.csv')
     df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
