@@ -40,8 +40,7 @@ logs_classification/**/*.png
 logs_recognition/**/logs
 logs_recognition/**/models
 logs_recognition/**/*.png
-logs_yolo/* 
-!logs_yolo/results.xlsx
+
 
 tele_datasets/*
 circle/
@@ -59,3 +58,10 @@ spare/conv_show/*.png
 
 **/*index_*.csv
 spare/images/*.png
+
+logs_yolo/*/label_plot.p*
+logs_yolo/*/runs/detect/*
+logs_yolo/*/runs/evolve/*
+logs_yolo/*/runs/train/results_*/*
+!logs_yolo/*/runs/train/results_*/results.csv
+!logs_yolo/results.xlsx
