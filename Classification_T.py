@@ -286,9 +286,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     model.train()
 
 
-    y_pred_full
-
-
     df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
     df.to_csv(f'{curr_dir}/acc-{acc_glo}.csv')
 
@@ -297,11 +294,12 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     df_conf = pd.DataFrame(cm)
     df_conf.to_csv(f'{curr_dir}/confusion_matrix.csv')
 
-
+    plt.figure(figsize=(7, 7))
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[str(i) + 'K' for i in Tems], )
     disp.plot(cmap='Reds')
     plt.xlabel('Predicted Temperature')
     plt.ylabel('True Temperature')
+    plt.tight_layout()
     plt.savefig(f'{curr_dir}/confusion.png', dpi=600)
     plt.savefig(f'{curr_dir}/confusion.pdf')
     # plt.show()
