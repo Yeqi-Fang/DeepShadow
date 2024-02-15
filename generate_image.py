@@ -13,7 +13,7 @@ import shutil
 import numpy as np
 
 
-num_stars = 10
+num_stars = 100
 num_BHs = 1
 num_imgaes = 3000
 height = 3072
@@ -121,7 +121,12 @@ def generate_image_func(angular_pixel_size_input_image):
             bh_path = f"{data_dir}/images/BHs_{code}.png"
             txt_path = f"{data_dir}/labels/BHs_{code}.txt"
         # print(i)
-        output_img = telescope_simulator.generate_image(show=False)
+        show=False
+        im_array = img.stars_BHs_img
+        intensity_image = telescope_simulator.get_intensity(im_array, show=show)
+        conv_image = telescope_simulator.get_convolved_image(im_array, intensity_image, show=show)
+        output_img = telescope_simulator.generate_image(conv_image, show=show)
+        # output_img = telescope_simulator.generate_image(show=False)
         output_img = output_img.astype(np.int64)
         noisy_img = output_img + np.random.normal(loc=0, scale=noise_radius, size=(height, width))
         noisy_img = np.where(noisy_img > 255, 255, noisy_img)
@@ -152,7 +157,12 @@ def generate_image_func(angular_pixel_size_input_image):
             bh_path = f"{data_dir}/images/BHs_{code}.png"
             txt_path = f"{data_dir}/labels/BHs_{code}.txt"
         # cv2.imwrite(bh_path, noise_BHs)
-        output_img = telescope_simulator.generate_image(show=False)
+        show=False
+        im_array = img.stars_BHs_img
+        intensity_image = telescope_simulator.get_intensity(im_array, show=show)
+        conv_image = telescope_simulator.get_convolved_image(im_array, intensity_image, show=show)
+        output_img = telescope_simulator.generate_image(conv_image, show=show)
+        # output_img = telescope_simulator.generate_image(show=False)
         output_img = output_img.astype(np.int64)
         noisy_img = output_img + np.random.normal(loc=0, scale=noise_radius, size=(height, width))
         noisy_img = np.where(noisy_img > 255, 255, noisy_img)
@@ -180,10 +190,12 @@ def generate_image_func(angular_pixel_size_input_image):
 
 
 if __name__ == '__main__':
-    angular_pixel_size_input_images = np.arange(5e-5, 2e-4, 1e-5)
+    # np.arange(5e-5, 2e-4, 1e-5)
+    angular_pixel_size_input_images = [5e-4]
     t1 = time.perf_counter()
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        executor.map(generate_image_func, angular_pixel_size_input_images)
+    # with concurrent.futures.ProcessPoolExecutor() as executor:
+    #     executor.map(generate_image_func, angular_pixel_size_input_images)
+    generate_image_func(5e-4)
     t2 = time.perf_counter()
     with open('tele_datasets/records.txt', 'a') as f:
         for i in angular_pixel_size_input_images:

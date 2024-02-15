@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import torch
 import random
+import os
+import subprocess
 try:
     from healpy.newvisufunc import projview, newprojplot
 except:
@@ -167,7 +169,7 @@ def plot_circle(image, circles, labels):
 
 
 # Function to plot images with the bounding boxes.
-def labels_plot(image_paths, label_paths, num_samples, curr_dir):
+def labels_plot(image_paths, label_paths, num_samples, SHOW=False, SAVE=False, save_dir=None, num_circles=20, subplots_col=2):
     """_summary_
 
     Args:
@@ -183,8 +185,10 @@ def labels_plot(image_paths, label_paths, num_samples, curr_dir):
     all_training_labels.sort()
 
     num_images = len(all_training_images)
-
-    plt.figure(figsize=(12, 6))
+    if subplots_col >=2:
+        plt.figure(figsize=(12, 6))
+    else:
+        plt.figure(figsize=(6, 6))
     for i in range(num_samples):
         j = random.randint(0,num_images-1)
         image = cv2.imread(all_training_images[j])
@@ -192,7 +196,7 @@ def labels_plot(image_paths, label_paths, num_samples, curr_dir):
             bboxes = []
             labels = []
             label_lines = f.readlines()
-            for label_line in label_lines[:20]:
+            for label_line in label_lines[:num_circles]:
                 label = label_line[0]
                 bbox_string = label_line[2:]
                 x_c, y_c, w, h = bbox_string.split(' ')
@@ -203,11 +207,64 @@ def labels_plot(image_paths, label_paths, num_samples, curr_dir):
                 bboxes.append([x_c, y_c, w, h])
                 labels.append(label)
         result_image = plot_circle(image, bboxes, labels)
-        plt.subplot(1, 2, i+1)
+        plt.subplot(1, subplots_col, i+1)
         plt.imshow(result_image[:, :, ::-1])
         plt.axis('off')
     plt.subplots_adjust(wspace=0)
     plt.tight_layout()
-    plt.savefig(f'{curr_dir}/label_plot.png', dpi=600)
-    # plt.show()
+    if SAVE:
+        plt.savefig(save_dir / 'label_plot.png', dpi=600)
+        plt.savefig(save_dir / 'label_plot.pdf', dpi=600)
+    if SHOW:
+        plt.show()
     
+def set_res_dir(TRAIN):
+    # Directory to store results
+    res_dir_count = len(glob.glob('runs/train/*'))
+    print(f"Current number of result directories: {res_dir_count}")
+    if TRAIN:
+        RES_DIR = f"results_{res_dir_count+1}"
+        print(RES_DIR)
+    else:
+        RES_DIR = f"results_{res_dir_count}"
+    return RES_DIR
+
+
+def show_valid_results(RES_DIR):
+    # !ls runs/train/{RES_DIR}
+    print(os.listdir(f"runs/train/{RES_DIR}"))
+    EXP_PATH = f"runs/train/{RES_DIR}"
+    validation_pred_images = glob.glob(f"{EXP_PATH}/*_pred.jpg")
+    print(validation_pred_images)
+    for pred_image in validation_pred_images:
+        image = cv2.imread(pred_image)
+        plt.figure(figsize=(19, 16))
+        plt.imshow(image[:, :, ::-1])
+        plt.axis('off')
+        plt.show()
+
+
+# Helper function for inference on images.
+def inference(RES_DIR, data_path):
+    # Directory to store inference results.
+    infer_dir_count = len(glob.glob('runs/detect/*'))
+    print(f"Current number of inference detection directories: {infer_dir_count}")
+    INFER_DIR = f"inference_{infer_dir_count+1}"
+    print(INFER_DIR)
+    # Inference on images.
+    subprocess.run(f'python detect.py --weights runs/train/{RES_DIR}/weights/best.pt '
+                f'--source {data_path} --name {INFER_DIR}', cwd='yolov5', capture_output=True)
+    return INFER_DIR
+
+
+def visualize(INFER_DIR):
+# Visualize inference images.
+    INFER_PATH = f"runs/detect/{INFER_DIR}"
+    infer_images = glob.glob(f"{INFER_PATH}/*.jpg")
+    print(infer_images)
+    for pred_image in infer_images:
+        image = cv2.imread(pred_image)
+        plt.figure(figsize=(19, 16))
+        plt.imshow(image[:, :, ::-1])
+        plt.axis('off')
+        plt.show()

@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import subprocess
 from pathlib import Path
 import pandas as pd
-
+import utils
 
 TRAIN = True
 EPOCHS = 10
@@ -50,22 +50,10 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     utils.labels_plot(
         image_paths=f'{data_dir}/train/images/*',
         label_paths=f'{data_dir}/train/labels/*',
-        num_samples=2, curr_dir=curr_dir
+        num_samples=2, SHOW=False, SAVE=True, save_dir=curr_dir
     )
 
-
-    def set_res_dir():
-        # Directory to store results
-        res_dir_count = len(glob.glob('runs/train/*'))
-        print(f"Current number of result directories: {res_dir_count}")
-        if TRAIN:
-            RES_DIR = f"results_{res_dir_count+1}"
-            print(RES_DIR)
-        else:
-            RES_DIR = f"results_{res_dir_count}"
-        return RES_DIR
-
-    RES_DIR = set_res_dir()
+    RES_DIR = utils.set_res_dir(TRAIN=TRAIN)
     # yolov5s.pt
     yaml = os.path.join(data_dir, 'data.yaml')
     if TRAIN:
@@ -76,44 +64,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
                     f'--batch-size {batch_size} --name {RES_DIR} --evolve 1000 --cache', cwd='yolov5', capture_output=True)
 
     # Function to show validation predictions saved during training.
-    def show_valid_results(RES_DIR):
-        # !ls runs/train/{RES_DIR}
-        print(os.listdir(f"runs/train/{RES_DIR}"))
-        EXP_PATH = f"runs/train/{RES_DIR}"
-        validation_pred_images = glob.glob(f"{EXP_PATH}/*_pred.jpg")
-        print(validation_pred_images)
-        for pred_image in validation_pred_images:
-            image = cv2.imread(pred_image)
-            plt.figure(figsize=(19, 16))
-            plt.imshow(image[:, :, ::-1])
-            plt.axis('off')
-            plt.show()
-
-
-    # Helper function for inference on images.
-    def inference(RES_DIR, data_path):
-        # Directory to store inference results.
-        infer_dir_count = len(glob.glob('runs/detect/*'))
-        print(f"Current number of inference detection directories: {infer_dir_count}")
-        INFER_DIR = f"inference_{infer_dir_count+1}"
-        print(INFER_DIR)
-        # Inference on images.
-        subprocess.run(f'python detect.py --weights runs/train/{RES_DIR}/weights/best.pt '
-                    f'--source {data_path} --name {INFER_DIR}', cwd='yolov5', capture_output=True)
-        return INFER_DIR
-
-
-    def visualize(INFER_DIR):
-    # Visualize inference images.
-        INFER_PATH = f"runs/detect/{INFER_DIR}"
-        infer_images = glob.glob(f"{INFER_PATH}/*.jpg")
-        print(infer_images)
-        for pred_image in infer_images:
-            image = cv2.imread(pred_image)
-            plt.figure(figsize=(19, 16))
-            plt.imshow(image[:, :, ::-1])
-            plt.axis('off')
-            plt.show()
 
 
     try:
@@ -130,8 +80,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         shutil.copy(f'{data_dir}/train/images/{i}', f'inference/{i}')
 
 
-    inference(RES_DIR, 'inference')
-
+    utils.inference(RES_DIR, 'inference')
 
     t2 = time.perf_counter()
 
