@@ -28,8 +28,8 @@ from telescope_simulator import TelescopeSimulator
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 sns.set_theme(style="whitegrid")
-
-angular_pixel_size_input_images = [1.9e-4]
+# 1.1e-4 ,1.2e-4, 1.3e-4, 
+angular_pixel_size_input_images = [1.4e-4, 1.6e-4, 1.7e-4, 1.8e-4, 1.9e-4]
 # paras  = [['Inclination', 'PA']]
 paras  = ['size']
 num_imgaes = 3
@@ -42,41 +42,19 @@ wl = 100e-9
 D = 6.5
 F = 131.4
 SIZE = 240
-num_epochs = 1
+num_epochs = 100
 BATCH_SIZE = 256
 inc_c = 91
 DROPOUT_RATE = 0.2
 learning_rate = 1e-3
 weight_decay = 1e-4
-
-
+critical_mae = 4
+loss_fn = 'mse'
+out_features = 1
 
 for para in paras:
     for angular_pixel_size_input_image in angular_pixel_size_input_images:
-        if para == 'Inclination':
-            critical_mae = 25
-        elif para == 'size':
-            critical_mae = 4
-        elif para == 'PA':
-            critical_mae = 30
-        elif para == ['Inclination', 'PA']:
-            critical_mae = 30
-        else:
-            raise ValueError
         print(f'starting ----------------------{angular_pixel_size_input_image:.3e}')
-
-        # angular_pixel_size_input_image = 4e-4
-
-        if para == ['Inclination', 'PA']:
-            loss_fn = 'double'
-            metric = 'double'
-            out_features = 2
-        elif para == 'PA':
-            loss_fn = 'angle'
-            out_features = 1
-        elif para == 'Inclination' or para == 'size':
-            loss_fn = 'mse'
-            out_features = 1
 
         tele_config = dict(
             # physical parameters
@@ -105,12 +83,12 @@ for para in paras:
         else:
             para_string = para
             
-        os.mkdir(f'logs_recognition/{para_string}/{date_string}')
-        os.mkdir(f'logs_recognition/{para_string}/{date_string}/models')
-        os.mkdir(f'logs_recognition/{para_string}/{date_string}/logs')
-        curr_dir = f'logs_recognition/{para_string}/{date_string}'
-        curr_models = f'logs_recognition/{para_string}/{date_string}/models'
-        curr_logs = f'logs_recognition/{para_string}/{date_string}/logs'
+        curr_dir = Path(f'logs_recognition/{para_string}/{date_string}')
+        curr_models = Path(f'logs_recognition/{para_string}/{date_string}/models')
+        curr_logs = Path(f'logs_recognition/{para_string}/{date_string}/logs')
+        curr_dir.mkdir()
+        curr_models.mkdir()
+        curr_logs.mkdir()
 
 
 
@@ -258,7 +236,7 @@ for para in paras:
 
         df = pd.DataFrame({'epoch':[], 'train loss':[], 'test loss':[], 'test mae':[]})
         df.to_csv(f'{curr_logs}/results.csv')
-        name = f"{curr_models}/final.pth.tar"
+        name = curr_models / "final.pth.tar"
 
         for epoch in range(1, num_epochs + 1):
             train_loss = 0
@@ -295,7 +273,8 @@ for para in paras:
             print(f"Testing Loss:{test_loss:.4f}\tMAE of {para}:{test_mae:.3f}")
             
             if test_mae < mae_glo and test_mae < critical_mae:
-                name = f"{curr_models}/epoch-{epoch}_MAE-{test_mae:.3f}.pth.tar"
+                name.unlink(missing_ok=True)
+                name = curr_models / f"epoch-{epoch}_MAE-{test_mae:.3f}.pth.tar"
                 print(f'MAE improve from {mae_glo:.3f} to {test_mae:.3f}, saving model dict to {name}')
                 mae_glo = test_mae
                 checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict()}
@@ -312,7 +291,7 @@ for para in paras:
 
 
         checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict()}
-        save_checkpoint(checkpoint, filename=f"{curr_models}/final.pth.tar")
+        save_checkpoint(checkpoint, filename=curr_models / "final.pth.tar")
 
 
         # best_model = name
