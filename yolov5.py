@@ -141,6 +141,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         'CCD_pixel_count': telescope_config['CCD_pixel_count']
     }
 
-    df = pd.read_excel('logs_yolo/results.xlsx')
+    df = pd.read_csv('logs_yolo/results.csv')
     df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
-    df.to_excel('logs_yolo/results.xlsx', index=False)
+    df.to_csv('logs_yolo/results.csv', index=False)

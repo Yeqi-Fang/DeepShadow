@@ -501,9 +501,9 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         'angular_pixel_size_input_image': angular_pixel_size_input_image,
         'para': 'Inc, PA'
     }
-    df = pd.read_excel(f'logs_recognition/results.xlsx')
+    df = pd.read_csv(f'logs_recognition/results.csv')
     df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
-    df.to_excel('logs_recognition/results.xlsx', index=False)
+    df.to_csv('logs_recognition/results.csv', index=False)
 
     # except:
     #     print(f'Failed ----------------------{angular_pixel_size_input_image:.3e}')

@@ -558,7 +558,7 @@ for para in paras:
             'para': para
 
         }
-        df = pd.read_excel(f'logs_recognition/results.xlsx')
+        df = pd.read_csv(f'logs_recognition/results.csv')
         df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
-        df.to_excel('logs_recognition/results.xlsx', index=False)
+        df.to_csv('logs_recognition/results.csv', index=False)
 
