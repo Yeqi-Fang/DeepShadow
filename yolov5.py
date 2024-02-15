@@ -15,7 +15,7 @@ import pandas as pd
 import utils
 
 TRAIN = True
-EPOCHS = 10
+EPOCHS = 300
 star = 10
 BH = 1
 num_photo = 3000
@@ -33,7 +33,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     now = datetime.datetime.now()
     date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
     os.mkdir(f'logs_yolo/yolov5-{date_string}')
-    curr_dir = f'logs_yolo/yolov5-{date_string}'
+    curr_dir = Path(f'logs_yolo/yolov5-{date_string}')
     np.random.seed(2024)
 
 
