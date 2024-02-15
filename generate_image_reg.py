@@ -91,7 +91,12 @@ def generate_image_reg_func(angular_pixel_size_input_image):
                     noise_BHs = img.add_noise(img.stars_BHs_img, radius=0)
                     tele_config['input_image'] = noise_BHs
                     telescope_simulator = TelescopeSimulator(**tele_config)
-                    output_img = telescope_simulator.generate_image(show=False)
+                    show=False
+                    im_array = img.stars_BHs_img
+                    intensity_image = telescope_simulator.get_intensity(im_array, show=show)
+                    conv_image = telescope_simulator.get_convolved_image(im_array, intensity_image, show=show)
+                    output_img = telescope_simulator.generate_image(conv_image, show=show)
+                    # output_img = telescope_simulator.generate_image(show=False)
                     img_size = tele_config['CCD_pixel_count']
                     x, y, r, _ = img.BH_lst[0] * img_size
                     x, y, r = int(x), int(y), int(r)
@@ -126,11 +131,12 @@ if __name__ == '__main__':
     # [15.5e-4, 16e-4, 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4]
     # [14e-4, 15e-4, 15.5e-4, 16e-4, 0.5e-4, 0.6e-4, 0.7e-4, 0.8e-4, 0.9e-4]
     # [1.1e-4 ,1.2e-4, 1.3e-4, 1.4e-4, 1.6e-4, 1.7e-4, 1.8e-4, 1.9e-4]
-    angular_pixel_size_input_images = [0.5e-4, 0.6e-4, 0.7e-4, 0.8e-4, 0.9e-4]
+    angular_pixel_size_input_images = [3e-4, 5e-4, 6e-4, 7e-4, 8e-4, 9e-4, 1e-3, 1.1e-3, 1.2e-3, 1.3e-3, 1.4e-3, 1.6e-3,
+                                       1.7e-3, 1.8e-3, 1.9e-3, 2e-3]
     t1 = time.perf_counter()
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        executor.map(generate_image_reg_func, angular_pixel_size_input_images)
-    # generate_image_reg_func(angular_pixel_size_input_images[0])
+    # with concurrent.futures.ProcessPoolExecutor() as executor:
+    #     executor.map(generate_image_reg_func, angular_pixel_size_input_images)
+    generate_image_reg_func(angular_pixel_size_input_images[0])
     t2 = time.perf_counter()
 
 
