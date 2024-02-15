@@ -27,10 +27,15 @@ from torch.utils.tensorboard import SummaryWriter
 from telescope_simulator import TelescopeSimulator
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
+
+from dataset import MyData
+from utils_reg import CNN, save_checkpoint, load_checkpoint, violin_plot
+
+
+
 sns.set_theme(style="whitegrid")
 # 1.1e-4 ,1.2e-4, 1.3e-4, 
 angular_pixel_size_input_images = [1.4e-4, 1.6e-4, 1.7e-4, 1.8e-4, 1.9e-4]
-# paras  = [['Inclination', 'PA']]
 paras  = ['size']
 num_imgaes = 3
 height = 1024
@@ -78,10 +83,7 @@ for para in paras:
 
         now = datetime.datetime.now()
         date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
-        if para == ['Inclination', 'PA']:
-            para_string = '_'.join(para)
-        else:
-            para_string = para
+        para_string = para
             
         curr_dir = Path(f'logs_recognition/{para_string}/{date_string}')
         curr_models = Path(f'logs_recognition/{para_string}/{date_string}/models')
@@ -117,13 +119,6 @@ for para in paras:
         images = os.listdir(data_dir)
         for i, image_name in tqdm(enumerate(images)):
             if (image_name.split('.')[1] == 'png'):
-                # if i == 0:
-                # try:
-                #     if para == 'PA' and np.abs(inclination[image_name]) > inc_c :
-                #         continue
-                # except ValueError:
-                #     if para == 'PA' and np.abs(inclination[image_name][0]) > inc_c :
-                #         continue
                 image_path = os.path.join(data_dir, image_name)
                 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
                 # print(df_sub)
@@ -136,34 +131,11 @@ for para in paras:
 
         x_train, x_test, y_train, y_test = train_test_split(dataset, labels, test_size=0.2, random_state=2024)
         _, _, index_train, index_test = train_test_split(dataset, indexes, test_size=0.2, random_state=2024)
-        pd.Series(index_train).to_csv(f'{curr_dir}/index_train.csv')
-        pd.Series(index_test).to_csv(f'{curr_dir}/index_test.csv')
-
-
-        class MyData(Dataset):
-
-            def __init__(self, dataset, labels, transform=None):
-                assert len(dataset) == len(labels)
-                self.transform = transform
-                self.dataset = dataset
-                self.labels = labels
-
-            def __getitem__(self, idx):
-                image = self.dataset[idx]
-                label = torch.tensor([self.labels[idx]], dtype=torch.float32)
-                if self.transform:
-                    image = self.transform(image)
-                return image, label
-
-            def __len__(self):
-                return len(self.labels)
-
+        # pd.Series(index_train).to_csv(f'{curr_dir}/index_train.csv')
+        # pd.Series(index_test).to_csv(f'{curr_dir}/index_test.csv')
 
         train_transform = transforms.Compose([
             transforms.ToTensor(),
-            # transforms.RandomHorizontalFlip(),
-            # transforms.RandomRotation(degrees=(0, 30)),
-            # transforms.RandomResizedCrop(size=(SIZE, SIZE),scale=(0.6, 1.0)),
             transforms.Normalize(mean=(0.4527616369984081, )*3,
                                 std=(0.04355326135400156, )*3)
         ])
@@ -184,42 +156,7 @@ for para in paras:
         base.classifier[0] = nn.Dropout(p=DROPOUT_RATE, inplace=True)
         base.classifier[1] = nn.Linear(in_features=1280, out_features=256, bias=True)
 
-
-        class CNN(nn.Module):
-            def __init__(self, base, out_features=2):
-                super(CNN, self).__init__()
-                self.base = base
-                self.relu2 = nn.ReLU()
-                self.dropout2 = nn.Dropout(p=DROPOUT_RATE)
-                self.fc2 = nn.Linear(in_features=256, out_features=32, bias=True)
-                self.relu3 = nn.ReLU()
-                self.dropout3 = nn.Dropout(p=DROPOUT_RATE)
-                self.fc3 = nn.Linear(in_features=32, out_features=out_features, bias=True)
-
-            def forward(self, x):
-                out = self.base(x)
-                out = self.relu2(out)
-                out = self.dropout2(out)
-                out = self.fc2(out)
-                out = self.relu3(out)
-                out = self.dropout3(out)
-                out = self.fc3(out)
-                return out
-
-
-
-        def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
-            torch.save(state, filename)
-
-
-        def load_checkpoint(checkpoint, model, optimizer, lr):
-            print("=> Loading checkpoint")
-            model.load_state_dict(checkpoint["state_dict"])
-            for param_group in optimizer.param_groups:
-                param_group["lr"] = lr
-
-
-        model = CNN(base=base, out_features=1)
+        model = CNN(base=base, out_features=1, DROPOUT_RATE=DROPOUT_RATE)
         model.to(device)
         criterion = nn.MSELoss()
         optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
@@ -292,10 +229,6 @@ for para in paras:
 
         checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict()}
         save_checkpoint(checkpoint, filename=curr_models / "final.pth.tar")
-
-
-        # best_model = name
-        # path_of_best_model = os.path.join(curr_models, best_model)
         model.load_state_dict(torch.load(name)['state_dict'])
 
 
@@ -320,39 +253,14 @@ for para in paras:
 
         model.train();
         df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
-        x = df.Pred
-        y = df.Real
-        fig, ax = plt.subplots(figsize=(7, 7))
-        palette = sns.color_palette('mako_r', n_colors=13)
-        sns.violinplot(x=df.Real.astype(int), y=df.Pred, inner=None, ax=ax, palette=palette)
-        newax = fig.add_axes(ax.get_position(), frameon=False)
-        x = np.arange(64, 75)
-        y = x
-        # with sns.set_theme(style="darkgrid"):
-        newax.plot(x, y, '-', color='#dcbe87', markersize=6, lw=2)
-        newax.plot(x, y, 'o', color='#FFC75F', markersize=6, lw=2)
-        newax.grid(False)
-        # ax.set_xlim(60, 77)
-        ax.set_ylim(df.Pred.min() - 0.6, df.Pred.max() + 0.6)
-        newax.set_ylim(df.Pred.min() - 0.6, df.Pred.max() + 0.6)
-        ax.set_xlabel('Real size of black hole (px)')
-        ax.set_ylabel('Predicted distribution of the size (px)')
-        plt.savefig(f'{curr_dir}/violin.png', dpi=600)
-        plt.savefig(f'{curr_dir}/violin.pdf', dpi=600)
+        violin_plot(df, curr_dir, loss_fn, test_mae)
         df.to_csv(f'{curr_dir}/{loss_fn}-{test_mae:.3f}.csv')
-
-
-
-
-        # Show the plot
-        # plt.show()
 
 
         a = {
             'Model_name': 'EfficientNet-B1',
             'MAE': mae_glo,
             'Batch_size': BATCH_SIZE,
-            # 'In size': IN_SIZE,
             'Resolution': SIZE,
             'Dropout': DROPOUT_RATE,
             'lr': learning_rate,
