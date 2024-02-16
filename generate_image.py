@@ -191,11 +191,11 @@ def generate_image_func(angular_pixel_size_input_image):
 
 if __name__ == '__main__':
     # np.arange(5e-5, 2e-4, 1e-5)
-    angular_pixel_size_input_images = [5e-4]
+    angular_pixel_size_input_images = np.arange(5e-6, 5e-5, 2e-6)
     t1 = time.perf_counter()
-    # with concurrent.futures.ProcessPoolExecutor() as executor:
-    #     executor.map(generate_image_func, angular_pixel_size_input_images)
-    generate_image_func(5e-4)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(generate_image_func, angular_pixel_size_input_images)
+    # generate_image_func(5e-4)
     t2 = time.perf_counter()
     with open('tele_datasets/records.txt', 'a') as f:
         for i in angular_pixel_size_input_images:
