@@ -427,7 +427,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     real_PA = y_full_PA.squeeze().cpu().numpy()
     df = pd.DataFrame({'Pred_inc': pred_inc, 'Pred_PA': pred_PA, 
                     'Real_inc': real_inc, 'Real_PA':real_PA})
-    df.to_csv(curr_dir / f'acc-s{mae:.3f}.csv', index=False)
+    df.to_csv(curr_dir / f'acc-{mae:.3f}.csv', index=False)
     err_inc = np.radians(np.abs(pred_inc - real_inc))
     real_PA = y_full_PA.squeeze()
     pred_PA = y_pred_full_PA.squeeze()
