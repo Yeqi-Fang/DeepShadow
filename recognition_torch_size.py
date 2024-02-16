@@ -28,8 +28,9 @@ from telescope_simulator import TelescopeSimulator
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay
 sns.set_theme(style="whitegrid")
-# 1.1e-4 ,1.2e-4, 1.3e-4, 1.4e-4, 1.6e-4, 1.7e-4, 
-angular_pixel_size_input_images = [1.8e-4, 1.9e-4, 5e-5, 6e-5, 7e-5, 8e-5, 9e-5]
+# 1.1e-4 ,1.2e-4, 1.3e-4, 1.4e-4, 1.6e-4, 1.7e-4, [1.8e-4, 1.9e-4, 5e-5, 6e-5, 7e-5, 8e-5, 9e-5]
+angular_pixel_size_input_images = [2e-4, 3e-4, 5e-4, 6e-4, 7e-4, 8e-4, 9e-4, 1e-3, 1.1e-3, 1.2e-3, 1.3e-3, 1.4e-3, 1.6e-3,
+                                       1.7e-3, 1.8e-3, 1.9e-3, 2e-3]
 # paras  = [['Inclination', 'PA']]
 paras  = ['size']
 num_imgaes = 3
