@@ -51,10 +51,10 @@ inference/
 yolov5/*
 
 
-spare/cmap_test
-spare/papershow/*.png
+plots/cmap_test
+plots/papershow/*.png
 stars/*.png
-spare/conv_show/*.png
+plots/conv_show/*.png
 
 **/*index_*.csv
 spare/images/*.png
