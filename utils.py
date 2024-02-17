@@ -13,7 +13,7 @@ except:
 from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
 
 
-def hex_to_rgb(hex_color):
+def hex_to_bgr(hex_color):
     """convert hex string to rgb tuple
 
     Args:
@@ -32,6 +32,58 @@ def hex_to_rgb(hex_color):
 
     return b, g, r
 
+def hex_to_bgr(hex_color):
+    """convert hex string to rgb tuple
+
+    Args:
+        hex_color (str): some hex code thing like #A1876B
+
+    Returns:
+        tuple(uint8, uint8, uint8): r g b color
+    """    
+    # Remove the '#' if present
+    hex_color = hex_color.lstrip('#')
+    
+    # Convert the hex color to RGB
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+
+    return b, g, r
+
+
+
+def hex_to_rgb(hex_color):
+    """convert hex string to rgb tuple
+
+    Args:
+        hex_color (str): some hex code thing like #A1876B
+
+    Returns:
+        tuple(uint8, uint8, uint8): r g b color
+    """    
+    # Remove the '#' if present
+    hex_color = hex_color.lstrip('#')
+    
+    # Convert the hex color to RGB
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+
+    return r, g, b
+
+def rgb_to_hex(rgb_color):
+    """Convert RGB tuple to hex string
+
+    Args:
+        rgb_color (tuple): RGB color tuple
+
+    Returns:
+        str: Hex color string
+    """
+    r, g, b = rgb_color
+    hex_color = "#{:02x}{:02x}{:02x}".format(r, g, b)
+    return hex_color
 
 def angle_loss(output, target):
     # output_angle = output * torch.pi / 180
