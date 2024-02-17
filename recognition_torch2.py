@@ -36,8 +36,10 @@ from utils import angle_loss, LinearNDInterpolatorExt
     #                                16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 
 
 # [6e-4, 7e-4, 8e-4, 9e-4, 10e-4, 11e-4, 12e-4, 13e-4] error
+# [1.1e-4 ,1.2e-4, 1.3e-4, 1.4e-4, 1.6e-4, 1.7e-4, 1.8e-4, 1.9e-4]
 num_round = 3
-angular_pixel_size_input_images = [1.1e-4 ,1.2e-4, 1.3e-4, 1.4e-4, 1.6e-4, 1.7e-4, 1.8e-4, 1.9e-4]
+angular_pixel_size_input_images = [2e-4, 3e-4, 5e-4, 6e-4, 7e-4, 8e-4, 9e-4, 1e-3, 1.1e-3, 1.2e-3, 1.3e-3, 1.4e-3, 1.6e-3,
+                                       1.7e-3, 1.8e-3, 1.9e-3, 2e-3]
 height = 1024
 width = 1024
 shape = 'rect'

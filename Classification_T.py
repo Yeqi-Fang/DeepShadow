@@ -2,6 +2,7 @@ import datetime
 import os
 import cv2
 import torch
+import re 
 import glob
 import torchvision
 import numpy as np
@@ -32,18 +33,17 @@ wl = 100e-9
 D = 6.5
 F = 131.4
 SIZE = 240
-num_epochs = 100
+num_epochs = 20
 BATCH_SIZE = 128
 DROPOUT_RATE = 0.5
 learning_rate = 1e-4
 weight_decay = 1e-4
 critical_acc = 0.7
-# 15.5e-4, 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4, 9.5e-4, 10.5e-4, 
-angular_pixel_size_input_images = [11.5e-4, 12.5e-4, 13.5e-4, 14e-4, 14.5e-4, 15e-4,
-                                   1.5e-4, 2.5e-4, 3.5e-4, 4.5e-4, 5.5e-4, 6.5e-4, 7.5e-4, 8.5e-4,
-                                   1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
+root_dir = Path('tele_datasets')
+b = re.compile(r'AS(\d\.\d*e-\d*)_')
 
-for angular_pixel_size_input_image in angular_pixel_size_input_images:
+for data_dir in root_dir.glob('reg_num*'):
+    angular_pixel_size_input_image = float(re.findall(b, str(data_dir))[0])
     print(f'starting ----------------------{angular_pixel_size_input_image:.3e}')
     tele_config = dict(
         # physical parameters
@@ -57,13 +57,6 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         BHs_path='./224/',num_stars=0, num_BHs=1, stars_lower_size=30, stars_upper_size=50,
         height=height, width=width, bg_color=0, shape=shape, BHS_lower_size=64, BH_upper_size=75
     )
-
-
-    data_dirs = glob.glob(f"tele_datasets/reg_num{num_imgaes}_rect_wl{wl:.3e}_*{F}*{angular_pixel_size_input_image:.2e}*_BHSize{BH_lower}-{BH_upper}")
-    assert len(data_dirs) != 0, 'Empty'
-    assert len(data_dirs) == 1, "Please specify more parameters!"
-    data_dir = data_dirs[0]
-
 
     now = datetime.datetime.now()
     date_string = now.strftime(r"%Y-%m-%d_%H-%M-%S")
@@ -84,10 +77,14 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     labels = []
     df = pd.read_csv(csv_dir)
     # df.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
-    df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
+    # df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
+    try:
+        df.PhotoName = df.PhotoName.apply(lambda x: x.split('/')[-1])
+    except AttributeError as e:
+        df['PhotoName'] = df.new_img
     df.set_index('PhotoName', inplace=True)
     T_series = df['Temperature']
-
+    # print(df)
     images = os.listdir(data_dir)
     for i, image_name in tqdm(enumerate(images)):
         if (image_name.split('.')[1] == 'png'):

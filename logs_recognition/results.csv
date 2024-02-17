@@ -194,3 +194,5 @@ date,Model_name,MAE,Batch_size,Resolution,Dropout,lr,No. training,No. testing,In
 2024-02-17_07-35-16,EfficientNet-B1,0.8979726194188297,256,240,0.2,0.001,21614.0,5404.0,,0.0018,50.0,PyTorch,mse,,size,,
 2024-02-17_08-24-13,EfficientNet-B1,0.3526578320122753,256,240,0.2,0.001,21614.0,5404.0,,0.0019,50.0,PyTorch,mse,,size,,
 2024-02-17_09-13-17,EfficientNet-B1,0.6787392703097984,256,240,0.2,0.001,21614.0,5404.0,,0.002,50.0,PyTorch,mse,,size,,
+2024-02-17_12-06-28,EfficientNet-B1,,300,240,0.5,0.001,,,,0.0002,100.0,PyTorch,<function angle_loss at 0x7f4cf55320d0>,,"Inc, PA",10.827843226299384,13.9293532371521
+2024-02-17_15-20-15,EfficientNet-B1,,300,240,0.5,0.001,,,,0.0003,100.0,PyTorch,<function angle_loss at 0x7f4cf55320d0>,,"Inc, PA",9.74488822660298,12.735542986128065
