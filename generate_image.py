@@ -191,7 +191,7 @@ def generate_image_func(angular_pixel_size_input_image):
 
 if __name__ == '__main__':
     # np.arange(5e-5, 2e-4, 1e-5)
-    angular_pixel_size_input_images = np.arange(5e-6, 5e-5, 2e-6)
+    angular_pixel_size_input_images = np.arange(1.9e-4, 1e-5, 5e-4)
     t1 = time.perf_counter()
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(generate_image_func, angular_pixel_size_input_images)
