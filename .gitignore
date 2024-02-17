@@ -53,6 +53,7 @@ yolov5/*
 
 plots/cmap_test
 plots/papershow/*.png
+plots/images/*.png
 stars/*.png
 plots/conv_show/*.png
 
