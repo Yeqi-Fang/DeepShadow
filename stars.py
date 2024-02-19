@@ -264,4 +264,3 @@ if __name__ == '__main__':
     # plt.imshow(img.stars_BHs_img, cmap='gray')
     # plt.show()
     img.txtGen(txt_path='stars/labels.txt')
-
