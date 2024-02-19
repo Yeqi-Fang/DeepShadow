@@ -13,7 +13,7 @@ import shutil
 import numpy as np
 
 
-num_stars = 100
+num_stars = 10
 num_BHs = 1
 num_imgaes = 3000
 height = 3072
@@ -44,7 +44,7 @@ def generate_image_func(angular_pixel_size_input_image):
 
     data_dir = f'tele_datasets/stars{num_stars}_BH{num_BHs}_num{num_imgaes}_{shape}_wl{tele_config["wavelength"]:.3e}_'\
     f'D{tele_config["telescope_diameter_m"]:.2f}_F{tele_config["telescope_focal_length_m"]}_'\
-    f'AS{tele_config["angular_pixel_size_input_image"]:.2e}_BHSize{stars_config["BHS_lower_size"]}-{stars_config["BH_upper_size"]}'
+    f'AS{tele_config["angular_pixel_size_input_image"]:.2e}_BHSize{stars_config["BHS_lower_size"]}-{stars_config["BH_upper_size"]}_noise{noise_radius}'
     # data_dir = f'stars{num_stars}_BH{num_BHs}_num{num_imgaes}_{shape}_wl{tele_config["wavelength"]:.3e}_D{tele_config["telescope_diameter_m"]:.2f}_F{tele_config["telescope_diameter_m"]}_BHSize{stars_config["BHS_lower_size"]}:{stars_config["BH_upper_size"]}'
 
 
@@ -191,7 +191,7 @@ def generate_image_func(angular_pixel_size_input_image):
 
 if __name__ == '__main__':
     # np.arange(5e-5, 2e-4, 1e-5)
-    angular_pixel_size_input_images = np.arange(1.9e-4, 1e-5, 5e-4)
+    angular_pixel_size_input_images = np.arange(1e-5, 1e-4, 1e-5)
     t1 = time.perf_counter()
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(generate_image_func, angular_pixel_size_input_images)

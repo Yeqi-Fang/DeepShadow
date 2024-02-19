@@ -26,9 +26,11 @@ BH_upper = 50
 wl = 100e-9
 D = 6.5
 F = 131.4
-angular_pixel_size_input_images = np.arange(5e-5, 2e-4, 1e-5)
+noise_radius = 10
+# np.arange(5e-5, 2e-4, 1e-5)
+angular_pixel_size_input_images = np.arange(1e-5, 1e-4, 1e-5)
 # angular_pixel_size_input_image = 5e-5
-
+print(angular_pixel_size_input_images)
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
     now = datetime.datetime.now()
     date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -39,7 +41,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
 
     t1 = time.perf_counter()
     data_dirs = glob.glob(f"tele_datasets/stars{star}_BH{BH}_num{num_photo}_rect_wl{wl:.3e}_*{F}"
-                        f"*{angular_pixel_size_input_image:.2e}_BHSize{BH_lower}-{BH_upper}")
+                        f"*{angular_pixel_size_input_image:.2e}_BHSize{BH_lower}-{BH_upper}_noise{noise_radius}")
     assert len(data_dirs) != 0, 'Empty'
     assert len(data_dirs) == 1, "Please specify more parameters!"
     data_dir = data_dirs[0]
@@ -138,7 +140,8 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         'wavelength': telescope_config['wavelength'],
         'init_size': 3072,
         'CCD_pixel_size': telescope_config['CCD_pixel_size'],
-        'CCD_pixel_count': telescope_config['CCD_pixel_count']
+        'CCD_pixel_count': telescope_config['CCD_pixel_count'],
+        'noise_radius': noise_radius,
     }
 
     df = pd.read_csv('logs_yolo/results.csv')
