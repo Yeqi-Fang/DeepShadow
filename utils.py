@@ -168,7 +168,7 @@ def plot_box(image, bboxes, labels):
         )
     return image
 
-def plot_circle(image, circles, labels):
+def plot_circle(image, circles, labels, confs=None):
     """plot circle on the image
 
     Args:
@@ -184,11 +184,11 @@ def plot_circle(image, circles, labels):
     h, w, _ = image.shape
     assert h == w, 'Only support square imagaes !!!'
     for box_num, box in enumerate(circles):
-        x, y, r, _ = box
+        x, y, wl, hl = box
         # denormalize the coordinates
         x = int(x*w)
         y = int(y*h)
-        r = int(r*w)
+        r = int(np.sqrt(wl*w*hl*h) * 1.1)
 
         class_name = class_names[int(labels[box_num])]
 
@@ -203,25 +203,27 @@ def plot_circle(image, circles, labels):
 
         p1, p2 = (int(x - r), int(y - r)), (int(x + r), int(y + r))
         # Text width and height
+        txt = class_name + f' {confs[box_num]:.2f}' if confs else class_name
         tw, th = cv2.getTextSize(
-            class_name,
+            txt,
             0, fontScale=font_scale, thickness=font_thickness
         )[0]
-        p2 = p1[0] + tw, p1[1] + -th - 10
+        p2 = p1[0] + tw + 10, p1[1] - th - 10
         cv2.rectangle(
             image,
             p1, p2,
             color=colors[class_names.index(class_name)],
             thickness=-1,
         )
-        cv2.putText(image, class_name, (x - r + 1, y - r - 6), cv2.FONT_HERSHEY_SIMPLEX,
-            font_scale, (255, 255, 255), font_thickness
+        cv2.putText(image, txt, (x - r + 1, y - r - 6), cv2.FONT_HERSHEY_TRIPLEX,
+            font_scale, (255, 255, 255), font_thickness, 
         )
     return image
 
 
 # Function to plot images with the bounding boxes.
-def labels_plot(image_paths, label_paths, num_samples, SHOW=False, SAVE=False, save_dir=None, num_circles=20, subplots_col=2):
+def labels_plot(image_paths, label_paths, num_samples, SHOW=False, SAVE=False, save_dir=None, num_circles=20,
+                subplots_col=2, conf=True, save_name='label_plot'):
     """_summary_
 
     Args:
@@ -247,26 +249,34 @@ def labels_plot(image_paths, label_paths, num_samples, SHOW=False, SAVE=False, s
         with open(all_training_labels[j], 'r') as f:
             bboxes = []
             labels = []
+            confs = []
             label_lines = f.readlines()
             for label_line in label_lines[:num_circles]:
                 label = label_line[0]
                 bbox_string = label_line[2:]
-                x_c, y_c, w, h = bbox_string.split(' ')
+                if conf:
+                    x_c, y_c, w, h, conf = bbox_string.split(' ')
+                    conf = float(conf)
+                    confs.append(conf)
+                else:
+                    x_c, y_c, w, h = bbox_string.split(' ')
                 x_c = float(x_c)
                 y_c = float(y_c)
                 w = float(w)
                 h = float(h)
                 bboxes.append([x_c, y_c, w, h])
                 labels.append(label)
-        result_image = plot_circle(image, bboxes, labels)
+        if conf:
+            result_image = plot_circle(image, bboxes, labels, confs)
         plt.subplot(1, subplots_col, i+1)
         plt.imshow(result_image[:, :, ::-1])
         plt.axis('off')
     plt.subplots_adjust(wspace=0)
     plt.tight_layout()
     if SAVE:
-        plt.savefig(save_dir / 'label_plot.png', dpi=600)
-        plt.savefig(save_dir / 'label_plot.pdf', dpi=600)
+        # plt.savefig(save_dir / f'{save_name}.png', dpi=600)
+        # plt.savefig(save_dir / f'{save_name}.pdf', dpi=600)
+        cv2.imwrite(str(save_dir / f'{save_name}.png'), result_image)
     if SHOW:
         plt.show()
     
