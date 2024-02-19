@@ -33,17 +33,19 @@ wl = 100e-9
 D = 6.5
 F = 131.4
 SIZE = 240
-num_epochs = 20
+num_epochs = 30
 BATCH_SIZE = 128
 DROPOUT_RATE = 0.5
 learning_rate = 1e-4
 weight_decay = 1e-4
-critical_acc = 0.7
+critical_acc = 0.4
 root_dir = Path('tele_datasets')
 b = re.compile(r'AS(\d\.\d*e-\d*)_')
 
 for data_dir in root_dir.glob('reg_num*'):
     angular_pixel_size_input_image = float(re.findall(b, str(data_dir))[0])
+    if angular_pixel_size_input_image not in [7e-6, 9e-6, 1e-5, 2e-5, 3e-5, 4e-5]:
+        continue
     print(f'starting ----------------------{angular_pixel_size_input_image:.3e}')
     tele_config = dict(
         # physical parameters

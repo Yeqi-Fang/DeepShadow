@@ -122,7 +122,6 @@ def generate_image_reg_func(angular_pixel_size_input_image):
         df_all.to_csv(f'{data_dir}/labels.csv')
 
 
-
 if __name__ == '__main__':
     # [6e-4, 7e-4, 8e-4, 9e-4, 10e-4, 11e-4, 12e-4, 13e-4]
     # [1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 14e-4, 15e-4, 16e-4]
@@ -131,13 +130,11 @@ if __name__ == '__main__':
     # [15.5e-4, 16e-4, 16.5e-4, 17e-4, 17.5e-4, 18e-4, 18.5e-4, 19e-4]
     # [14e-4, 15e-4, 15.5e-4, 16e-4, 0.5e-4, 0.6e-4, 0.7e-4, 0.8e-4, 0.9e-4]
     # [1.1e-4 ,1.2e-4, 1.3e-4, 1.4e-4, 1.6e-4, 1.7e-4, 1.8e-4, 1.9e-4]
-    angular_pixel_size_input_images = [2e-4, 3e-4, 5e-4, 6e-4, 7e-4, 8e-4, 9e-4, 1e-3, 1.1e-3, 1.2e-3, 1.3e-3, 1.4e-3, 1.6e-3,
-                                       1.7e-3, 1.8e-3, 1.9e-3, 2e-3]
+    # [2e-4, 3e-4, 5e-4, 6e-4, 7e-4, 8e-4, 9e-4, 1e-3, 1.1e-3, 1.2e-3, 1.3e-3, 1.4e-3, 1.6e-3,
+    #                                    1.7e-3, 1.8e-3, 1.9e-3, 2e-3]
+    angular_pixel_size_input_images = [5e-6, 7e-6, 9e-6, 1e-5, 2e-5, 3e-5, 4e-5]
     t1 = time.perf_counter()
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(generate_image_reg_func, angular_pixel_size_input_images)
     # generate_image_reg_func(angular_pixel_size_input_images[0])
     t2 = time.perf_counter()
-
-
-
