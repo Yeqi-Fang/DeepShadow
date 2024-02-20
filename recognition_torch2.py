@@ -1,4 +1,5 @@
 import os
+import re
 import cv2
 import torch
 import datetime
@@ -55,10 +56,13 @@ DROPOUT_RATE = 0.5
 learning_rate = 1e-3
 weight_decay = 1e-4
 critical_mae = 100
+root_dir = Path('tele_datasets')
+b = re.compile(r'AS(\d\.\d*e-\d*)_')
 
-
-for angular_pixel_size_input_image in angular_pixel_size_input_images:
+# for angular_pixel_size_input_image in angular_pixel_size_input_images:
+for data_dir in root_dir.glob('reg_num3*'):
 # try:
+    angular_pixel_size_input_image = float(re.findall(b, str(data_dir))[0])
     if angular_pixel_size_input_image < 2e-4:
         loss_fn = nn.L1Loss()
     else:
