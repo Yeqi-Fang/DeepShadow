@@ -183,6 +183,7 @@ def plot_circle(image, circles, labels, confs=None):
     # the bounding box coordinates
     h, w, _ = image.shape
     assert h == w, 'Only support square imagaes !!!'
+    print(circles)
     for box_num, box in enumerate(circles):
         x, y, wl, hl = box
         # denormalize the coordinates
