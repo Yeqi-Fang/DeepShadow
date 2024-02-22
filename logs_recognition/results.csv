@@ -203,3 +203,7 @@ date,Model_name,MAE,Batch_size,Resolution,Dropout,lr,No. training,No. testing,In
 2024-02-21_11-47-51,EfficientNet-B1,,300,240,0.5,0.001,,,,0.0008,100.0,PyTorch,<function angle_loss at 0x7f5da632d1f0>,,"Inc, PA",6.105478960174176,13.418215274810793
 2024-02-21_15-05-14,EfficientNet-B1,,300,240,0.5,0.001,,,,0.0018,100.0,PyTorch,<function angle_loss at 0x7f5da632d1f0>,,"Inc, PA",5.940674822035761,12.14445808198717
 2024-02-21_18-19-58,EfficientNet-B1,,300,240,0.5,0.001,,,,0.0002,100.0,PyTorch,<function angle_loss at 0x7f5da632d1f0>,,"Inc, PA",10.999634918506546,13.84168529510498
+2024-02-21_21-34-55,EfficientNet-B1,,300,240,0.5,0.001,,,,0.0016,100.0,PyTorch,<function angle_loss at 0x7f5da632d1f0>,,"Inc, PA",5.909195431950002,11.723217222425673
+2024-02-22_00-54-43,EfficientNet-B1,,300,240,0.5,0.001,,,,7e-06,100.0,PyTorch,<function angle_loss at 0x7f5da632d1f0>,,"Inc, PA",44.98284329316248,89.64754274156358
+2024-02-22_04-12-03,EfficientNet-B1,,300,240,0.5,0.001,,,,7e-05,100.0,PyTorch,<function angle_loss at 0x7f5da632d1f0>,,"Inc, PA",25.251242930583828,16.76628526051839
+2024-02-22_07-32-49,EfficientNet-B1,,300,240,0.5,0.001,,,,4e-05,100.0,PyTorch,<function angle_loss at 0x7f5da632d1f0>,,"Inc, PA",32.75580353528636,21.20637755923801
