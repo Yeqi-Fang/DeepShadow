@@ -6,7 +6,7 @@ import math
 import os
 from copy import copy
 from pathlib import Path
-
+import seaborn as sns
 import cv2
 import matplotlib
 import matplotlib.pyplot as plt
@@ -16,15 +16,15 @@ import seaborn as sn
 import torch
 from PIL import Image, ImageDraw
 from scipy.ndimage.filters import gaussian_filter1d
-from ultralytics.utils.plotting import Annotator
-
+# from ultralytics.utils.plotting import Annotator
+sns.set_theme(style="whitegrid")
 # from utils import TryExcept, threaded
 # from utils.general import LOGGER, clip_boxes, increment_path, xywh2xyxy, xyxy2xywh
 # from utils.metrics import fitness
 
 # Settings
 RANK = int(os.getenv("RANK", -1))
-matplotlib.rc("font", **{"size": 9})
+matplotlib.rc("font", **{"size": 12})
 matplotlib.use("Agg")  # for writing to files only
 
 
@@ -442,8 +442,8 @@ def plot_results(file="path/to/results.csv", dir=""):
             for i, j in enumerate([1, 2, 3, 8, 9, 10]):
                 y = data.values[:, j].astype("float")
                 # y[y == 0] = np.nan  # don't show zero values
-                ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8)  # actual results
-                ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=2)  # smoothing line
+                ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8, color='#FF6F91', alpha=0.7)  # actual results
+                ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=2, color='#0089BA')  # smoothing line
                 ax[i].set_title(s[j], fontsize=12)
                 # if j in [8, 9, 10]:  # share train and val loss y axes
                 #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
@@ -451,8 +451,8 @@ def plot_results(file="path/to/results.csv", dir=""):
             LOGGER.info(f"Warning: Plotting error for {f}: {e}")
     ax[1].legend()
     fig.tight_layout()
-    fig.savefig(save_dir / "results1.png", dpi=600)
-    fig.savefig(save_dir / "results1.pdf")
+    fig.savefig(save_dir / "loss.png", dpi=600)
+    fig.savefig(save_dir / "loss.pdf")
     
     
     fig, ax = plt.subplots(1, 4, figsize=(15, 4), tight_layout=True)
@@ -470,8 +470,8 @@ def plot_results(file="path/to/results.csv", dir=""):
             for i, j in enumerate([4, 5, 6, 7]):
                 y = data.values[:, j].astype("float")
                 # y[y == 0] = np.nan  # don't show zero values
-                ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8)  # actual results
-                ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=2)  # smoothing line
+                ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8, color='#ff87a5')  # actual results
+                ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=3, color='#666296')  # smoothing line
                 ax[i].set_title(s[j], fontsize=12)
                 # if j in [8, 9, 10]:  # share train and val loss y axes
                 #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
@@ -479,8 +479,8 @@ def plot_results(file="path/to/results.csv", dir=""):
             LOGGER.info(f"Warning: Plotting error for {f}: {e}")
     ax[1].legend()
     fig.tight_layout()
-    fig.savefig(save_dir / "results2.png", dpi=600)
-    fig.savefig(save_dir / "results2.pdf")
+    fig.savefig(save_dir / "metric.png", dpi=600)
+    fig.savefig(save_dir / "metric.pdf")
 
     plt.close()
 
