@@ -17,7 +17,7 @@ import torch
 from PIL import Image, ImageDraw
 from scipy.ndimage.filters import gaussian_filter1d
 # from ultralytics.utils.plotting import Annotator
-sns.set_theme(style="whitegrid")
+sns.set_theme(style="whitegrid", font='Times New Roman', font_scale=1.2)
 # from utils import TryExcept, threaded
 # from utils.general import LOGGER, clip_boxes, increment_path, xywh2xyxy, xyxy2xywh
 # from utils.metrics import fitness
@@ -442,9 +442,13 @@ def plot_results(file="path/to/results.csv", dir=""):
             for i, j in enumerate([1, 2, 3, 8, 9, 10]):
                 y = data.values[:, j].astype("float")
                 # y[y == 0] = np.nan  # don't show zero values
-                ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8, color='#FF6F91', alpha=0.7)  # actual results
-                ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=2, color='#0089BA')  # smoothing line
+                ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8, color='#ff87a5')  # actual results
+                ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=2, color='#666296')  # smoothing line
                 ax[i].set_title(s[j], fontsize=12)
+                if j == 1:
+                    ax[i].set_ylabel('Training')
+                if j == 8:
+                    ax[i].set_ylabel('Validation')
                 # if j in [8, 9, 10]:  # share train and val loss y axes
                 #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
         except Exception as e:
