@@ -269,6 +269,7 @@ for data_dir in root_dir.glob('reg_num*'):
     with torch.no_grad():
         y_full = torch.tensor([]).to(device=device)
         y_pred_full = torch.tensor([]).to(device=device)
+        y_pred_raw = torch.tensor([]).to(device=device)
         for x, y in test_loader:
             x = x.to(device=device)
             y = y.to(device=device)
@@ -276,6 +277,7 @@ for data_dir in root_dir.glob('reg_num*'):
             _, y_pred = torch.max(y_pred_raw, dim=1)
             y_full = torch.cat((y_full, y), 0)
             y_pred_full = torch.cat((y_pred_full, y_pred), 0)
+            y_pred_raw = torch.cat((y_pred_raw, y_pred_raw), 0)
         loss = criterion(y_pred_full, y_full)
         total_accuracy = (y_full == y_pred_full).sum()
 
@@ -285,7 +287,8 @@ for data_dir in root_dir.glob('reg_num*'):
     model.train()
 
 
-    df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 'Real': y_full.squeeze().cpu().numpy()})
+    df = pd.DataFrame({'Pred': y_pred_full.squeeze().cpu().numpy(), 
+                       'Real': y_full.squeeze().cpu().numpy(), 'Pred_raw': y_pred_raw.squeeze().cpu().numpy()})
     df.to_csv(f'{curr_dir}/acc-{acc_glo}.csv')
 
 
