@@ -44,7 +44,7 @@ b = re.compile(r'AS(\d\.\d*e-\d*)_')
 
 for data_dir in root_dir.glob('reg_num*'):
     angular_pixel_size_input_image = float(re.findall(b, str(data_dir))[0])
-    if angular_pixel_size_input_image not in [7e-6, 9e-6, 1e-5, 2e-5, 3e-5, 4e-5]:
+    if angular_pixel_size_input_image not in [3e-5, 4e-5, 6e-5, 7e-4, 5e-5]:
         continue
     print(f'starting ----------------------{angular_pixel_size_input_image:.3e}')
     tele_config = dict(
