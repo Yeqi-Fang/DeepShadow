@@ -47,7 +47,6 @@ yolov7/
 datasets/
 inference/
 .DB_Store
-yolov5/*
 
 
 plots/cmap_test
