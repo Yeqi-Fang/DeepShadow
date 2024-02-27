@@ -100,3 +100,5 @@ date,Model_name,Batch_size,Resolution,Dropout,lr,No. training,No. testing,acc,In
 2024-02-19_14-47-24,EfficientNet-B1,256,240,0.5,0.0001,,,0.0,,30.0,PyTorch,,9e-06
 2024-02-19_15-14-28,EfficientNet-B1,256,240,0.5,0.0001,,,0.4117320503330866,,30.0,PyTorch,,1e-05
 2024-02-27_19-21-30,EfficientNet-B1,256,240,0.5,0.0001,,,0.0,,1.0,PyTorch,,3e-05
+2024-02-27_19-24-09,EfficientNet-B1,256,240,0.5,0.0001,,,0.4624352331606217,,30.0,PyTorch,,3e-05
+2024-02-27_19-54-34,EfficientNet-B1,256,240,0.5,0.0001,,,0.7614729829755736,,30.0,PyTorch,,4e-05
