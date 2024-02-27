@@ -63,5 +63,6 @@ logs_yolo/*/runs/detect/*
 logs_yolo/*/runs/evolve/*
 logs_yolo/*/runs/train/results_*/*
 !logs_yolo/*/runs/train/results_*/results.csv
+!logs_yolo/*/runs/train/results_*/*.png
 !logs_yolo/results.xlsx
 !logs_yolo/results.csv
