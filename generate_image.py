@@ -195,7 +195,7 @@ if __name__ == '__main__':
     t1 = time.perf_counter()
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(generate_image_func, angular_pixel_size_input_images)
-    # generate_image_func(5e-4)
+    # generate_image_func(5e-4)    
     t2 = time.perf_counter()
     with open('tele_datasets/records.txt', 'a') as f:
         for i in angular_pixel_size_input_images:
