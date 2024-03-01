@@ -28,7 +28,7 @@ D = 6.5
 F = 131.4
 noise_radius = 10
 # np.arange(5e-5, 2e-4, 1e-5)
-angular_pixel_size_input_images = np.arange(1e-5, 1e-4, 1e-5)
+angular_pixel_size_input_images = np.arange(1e-5, 1e-3, 2e-5)
 # angular_pixel_size_input_image = 5e-5
 print(angular_pixel_size_input_images)
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
@@ -38,22 +38,24 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     curr_dir = Path(f'logs_yolo/yolov5-{date_string}')
     np.random.seed(2024)
 
-
-    t1 = time.perf_counter()
-    data_dirs = glob.glob(f"tele_datasets/stars{star}_BH{BH}_num{num_photo}_rect_wl{wl:.3e}_*{F}"
-                        f"*{angular_pixel_size_input_image:.2e}_BHSize{BH_lower}-{BH_upper}_noise{noise_radius}")
-    assert len(data_dirs) != 0, 'Empty'
-    assert len(data_dirs) == 1, "Please specify more parameters!"
-    data_dir = data_dirs[0]
-    data_dir
+    try:
+        t1 = time.perf_counter()
+        data_dirs = glob.glob(f"tele_datasets/stars{star}_BH{BH}_num{num_photo}_rect_wl{wl:.3e}_*{F}"
+                            f"*{angular_pixel_size_input_image:.2e}_BHSize{BH_lower}-{BH_upper}_noise{noise_radius}")
+        assert len(data_dirs) != 0, 'Empty'
+        assert len(data_dirs) == 1, "Please specify more parameters!"
+        data_dir = data_dirs[0]
+    except AssertionError as e:
+        continue
+    # data_dir
 
 
     # Visualize a few training images.
-    utils.labels_plot(
-        image_paths=f'{data_dir}/train/images/*',
-        label_paths=f'{data_dir}/train/labels/*',
-        num_samples=2, SHOW=False, SAVE=True, save_dir=curr_dir
-    )
+    # utils.labels_plot(
+    #     image_paths=f'{data_dir}/train/images/*',
+    #     label_paths=f'{data_dir}/train/labels/*',
+    #     num_samples=2, SHOW=False, SAVE=True, save_dir=curr_dir
+    # )
 
     RES_DIR = utils.set_res_dir(TRAIN=TRAIN)
     # yolov5s.pt
