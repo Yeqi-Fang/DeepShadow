@@ -13,7 +13,7 @@ import shutil
 import numpy as np
 
 
-num_stars = 20
+num_stars = 100
 num_BHs = 1
 num_imgaes = 1000
 height = 3072
