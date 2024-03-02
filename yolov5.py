@@ -15,11 +15,11 @@ import pandas as pd
 import utils
 
 TRAIN = True
-EPOCHS = 300
+EPOCHS = 200
 star = 10
 BH = 1
 num_photo = 1000
-batch_size = 8
+batch_size = 16
 size = 1024
 BH_lower = 30
 BH_upper = 50
@@ -28,7 +28,7 @@ D = 6.5
 F = 131.4
 noise_radius = 3
 # np.arange(5e-5, 2e-4, 1e-5)
-angular_pixel_size_input_images = np.arange(1e-5, 1e-3, 2e-5)
+angular_pixel_size_input_images = np.arange(1.5e-4, 1e-3, 2e-5)
 # angular_pixel_size_input_image = 5e-5
 print(angular_pixel_size_input_images)
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
