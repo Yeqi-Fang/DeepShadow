@@ -13,7 +13,7 @@ import shutil
 import numpy as np
 
 
-num_stars = 10
+num_stars = 20
 num_BHs = 1
 num_imgaes = 1000
 height = 3072
@@ -191,7 +191,7 @@ def generate_image_func(angular_pixel_size_input_image):
 
 if __name__ == '__main__':
     # np.arange(5e-5, 2e-4, 1e-5)
-    angular_pixel_size_input_images = np.arange(1e-5, 1e-3, 2e-5)
+    angular_pixel_size_input_images = np.arange(1e-5, 1e-3, 3e-5)
     t1 = time.perf_counter()
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.map(generate_image_func, angular_pixel_size_input_images)

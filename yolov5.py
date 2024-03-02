@@ -18,7 +18,7 @@ TRAIN = True
 EPOCHS = 300
 star = 10
 BH = 1
-num_photo = 3000
+num_photo = 1000
 batch_size = 8
 size = 1024
 BH_lower = 30
@@ -26,27 +26,28 @@ BH_upper = 50
 wl = 100e-9
 D = 6.5
 F = 131.4
-noise_radius = 10
+noise_radius = 3
 # np.arange(5e-5, 2e-4, 1e-5)
 angular_pixel_size_input_images = np.arange(1e-5, 1e-3, 2e-5)
 # angular_pixel_size_input_image = 5e-5
 print(angular_pixel_size_input_images)
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
+    # time.sleep(1)
     now = datetime.datetime.now()
     date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
     os.mkdir(f'logs_yolo/yolov5-{date_string}')
     curr_dir = Path(f'logs_yolo/yolov5-{date_string}')
     np.random.seed(2024)
 
-    try:
-        t1 = time.perf_counter()
-        data_dirs = glob.glob(f"tele_datasets/stars{star}_BH{BH}_num{num_photo}_rect_wl{wl:.3e}_*{F}"
-                            f"*{angular_pixel_size_input_image:.2e}_BHSize{BH_lower}-{BH_upper}_noise{noise_radius}")
-        assert len(data_dirs) != 0, 'Empty'
-        assert len(data_dirs) == 1, "Please specify more parameters!"
-        data_dir = data_dirs[0]
-    except AssertionError as e:
-        continue
+    # try:
+    t1 = time.perf_counter()
+    data_dirs = glob.glob(f"tele_datasets/stars{star}_BH{BH}_num{num_photo}_rect_wl{wl:.3e}_*{F}"
+                        f"*{angular_pixel_size_input_image:.2e}_BHSize{BH_lower}-{BH_upper}_noise{noise_radius}")
+    assert len(data_dirs) != 0, 'Empty'
+    assert len(data_dirs) == 1, "Please specify more parameters!"
+    data_dir = data_dirs[0]
+    # except AssertionError as e:
+    #     continue
     # data_dir
 
 
