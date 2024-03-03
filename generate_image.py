@@ -13,14 +13,14 @@ import shutil
 import numpy as np
 
 
-num_stars = 3
+num_stars = 10
 num_BHs = 1
 num_imgaes = 1000
 height = 3072
 width = 3072
 shape = 'rect'
 mode = 'train_val'
-noise_radius = 3
+noise_radius = 10
 # img_lab
 # csv
 
