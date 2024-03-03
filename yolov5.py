@@ -16,10 +16,10 @@ import utils
 
 TRAIN = True
 EPOCHS = 200
-star = 10
+star = 100
 BH = 1
 num_photo = 1000
-batch_size = 16
+batch_size = 32
 size = 1024
 BH_lower = 30
 BH_upper = 50
@@ -28,9 +28,12 @@ D = 6.5
 F = 131.4
 noise_radius = 3
 # np.arange(5e-5, 2e-4, 1e-5)
-angular_pixel_size_input_images = np.arange(1.5e-4, 1e-3, 2e-5)
+angular_pixel_size_input_images = np.arange(1e-5, 1e-3, 5e-5)
 # angular_pixel_size_input_image = 5e-5
 print(angular_pixel_size_input_images)
+python_path = '~/anaconda3/envs/deepshadow/bin/python'
+
+
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
     # time.sleep(1)
     now = datetime.datetime.now()
@@ -62,11 +65,11 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     # yolov5s.pt
     yaml = os.path.join(data_dir, 'data.yaml')
     if TRAIN:
-        subprocess.run(f'python train.py --data ../{yaml} --weights yolov5s.pt --img {size} --epochs {EPOCHS} '
-                    f'--batch-size {batch_size} --name {RES_DIR} --cache', cwd='yolov5')
+        subprocess.run(f'{python_path} train.py --data ../{yaml} --weights yolov5s.pt --img {size} --epochs {EPOCHS} '
+                    f'--batch-size {batch_size} --name {RES_DIR} --cache', cwd='yolov5', shell=True)
     else:
-        subprocess.run(f'python train.py --weights yolov5s.pt --data ../{yaml} --img {size}'
-                    f'--batch-size {batch_size} --name {RES_DIR} --evolve 1000 --cache', cwd='yolov5', capture_output=True)
+        subprocess.run(f'{python_path} train.py --weights yolov5s.pt --data ../{yaml} --img {size}'
+                    f'--batch-size {batch_size} --name {RES_DIR} --evolve 1000 --cache', cwd='yolov5', shell=True)
 
     # Function to show validation predictions saved during training.
 
@@ -78,14 +81,14 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
         os.mkdir('inference')
 
 
-    inference_lst = list(np.random.choice(os.listdir(f"{data_dir}/train/images"), 10))
+    # inference_lst = list(np.random.choice(os.listdir(f"{data_dir}/train/images"), 10))
 
 
-    for i in inference_lst:
-        shutil.copy(f'{data_dir}/train/images/{i}', f'inference/{i}')
+    # for i in inference_lst:
+    #     shutil.copy(f'{data_dir}/train/images/{i}', f'inference/{i}')
 
 
-    utils.inference(RES_DIR, 'inference')
+    # utils.inference(RES_DIR, 'inference')
 
     t2 = time.perf_counter()
 
