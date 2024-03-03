@@ -316,7 +316,7 @@ def inference(RES_DIR, data_path):
     print(INFER_DIR)
     # Inference on images.
     subprocess.run(f'python detect.py --weights runs/train/{RES_DIR}/weights/best.pt '
-                f'--source {data_path} --name {INFER_DIR}', cwd='yolov5', capture_output=True)
+                f'--source {data_path} --name {INFER_DIR}', cwd='yolov5')
     return INFER_DIR
 
 
