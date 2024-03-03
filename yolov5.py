@@ -16,9 +16,7 @@ import utils
 
 TRAIN = True
 EPOCHS = 300
-star = 10
-EPOCHS = 200
-star = 100
+star = 3
 BH = 1
 num_photo = 1000
 batch_size = 32
@@ -30,11 +28,10 @@ D = 6.5
 F = 131.4
 noise_radius = 3
 # np.arange(5e-5, 2e-4, 1e-5)
-angular_pixel_size_input_images = np.arange(6.1e-4, 1e-3, 1e-4)
 angular_pixel_size_input_images = np.arange(1e-5, 1e-3, 5e-5)
 # angular_pixel_size_input_image = 5e-5
 print(angular_pixel_size_input_images)
-python_path = '~/anaconda3/envs/deepshadow/bin/python'
+python_path = 'python'
 
 
 for angular_pixel_size_input_image in angular_pixel_size_input_images:
@@ -69,7 +66,7 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     yaml = os.path.join(data_dir, 'data.yaml')
     if TRAIN:
         subprocess.run(f'{python_path} train.py --data ../{yaml} --weights yolov5s.pt --img {size} --epochs {EPOCHS} '
-                    f'--batch-size {batch_size} --name {RES_DIR} --cache', cwd='yolov5', shell=True)
+                    f'--batch-size {batch_size} --name {RES_DIR} --cache', cwd='yolov5')
     else:
         subprocess.run(f'python train.py --weights yolov5s.pt --data ../{yaml} --img {size}'
                     f'--batch-size {batch_size} --name {RES_DIR} --evolve 1000 --cache', cwd='yolov5')
