@@ -71,21 +71,21 @@ for angular_pixel_size_input_image in angular_pixel_size_input_images:
     # Function to show validation predictions saved during training.
 
 
-    try:
-        os.mkdir('inference')
-    except FileExistsError:
-        shutil.rmtree('inference')
-        os.mkdir('inference')
+    # try:
+    #     os.mkdir('inference')
+    # except FileExistsError:
+    #     shutil.rmtree('inference')
+    #     os.mkdir('inference')
 
 
-    inference_lst = list(np.random.choice(os.listdir(f"{data_dir}/train/images"), 10))
+    # inference_lst = list(np.random.choice(os.listdir(f"{data_dir}/train/images"), 10))
 
 
-    for i in inference_lst:
-        shutil.copy(f'{data_dir}/train/images/{i}', f'inference/{i}')
+    # for i in inference_lst:
+    #     shutil.copy(f'{data_dir}/train/images/{i}', f'inference/{i}')
 
 
-    utils.inference(RES_DIR, 'inference')
+    # utils.inference(RES_DIR, 'inference')
 
     t2 = time.perf_counter()
 
