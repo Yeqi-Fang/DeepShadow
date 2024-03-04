@@ -65,3 +65,4 @@ logs_yolo/*/runs/train/results_*/*
 !logs_yolo/*/runs/train/results_*/results.csv
 !logs_yolo/*/runs/train/results_*/*.npy
 !logs_yolo/results.csv
+yolov5/
