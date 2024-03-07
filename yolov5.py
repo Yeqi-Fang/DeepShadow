@@ -16,7 +16,7 @@ import utils
 
 TRAIN = True
 EPOCHS = 300
-star = 3
+star = 10
 BH = 1
 num_photo = 1000
 batch_size = 16
@@ -26,7 +26,7 @@ BH_upper = 50
 wl = 100e-9
 D = 6.5
 F = 131.4
-noise_radius = 3
+noise_radius = 10
 # np.arange(5e-5, 2e-4, 1e-5)
 angular_pixel_size_input_images = np.arange(1e-5, 1e-3, 5e-5)
 # angular_pixel_size_input_image = 5e-5
