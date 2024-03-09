@@ -107,7 +107,7 @@ class LinearNDInterpolatorExt(object):
 
 class_names = ['star', 'BH']
 # colors = np.random.uniform(0, 255, size=(len(class_names), 3))
-colors = ['#d78398', '#D65DB1', ]
+colors = ['#d78398', '#845EC2', ]
 colors = list(map(hex_to_rgb, colors))
 
 # Function to convert bounding boxes in YOLO format to xmin, ymin, xmax, ymax.
