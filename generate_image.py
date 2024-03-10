@@ -20,7 +20,7 @@ height = 3072
 width = 3072
 shape = 'rect'
 mode = 'train_val'
-noise_radius = 15
+noise_radius = 20
 # img_lab
 # csv
 
