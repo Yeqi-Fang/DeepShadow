@@ -431,28 +431,26 @@ def plot_results(file="path/to/results.csv", dir=""):
     ax = ax.ravel()
     assert len(files), f"No results.csv files found in {save_dir.resolve()}, nothing to plot."
     for f in files:
-        try:
-            data = pd.read_csv(f)
-            data.columns = [x.strip() for x in data.columns]
-            data = data.rename(columns=dic)
-            print(data.columns)
-            s = [x.strip() for x in data.columns]
-            print(s)
-            x = data.values[:, 0]
-            for i, j in enumerate([1, 2, 3, 8, 9, 10]):
-                y = data.values[:, j].astype("float")
-                # y[y == 0] = np.nan  # don't show zero values
-                ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8, color='#ff87a5')  # actual results
-                ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=2, color='#666296')  # smoothing line
-                ax[i].set_title(s[j], fontsize=12)
-                if j == 1:
-                    ax[i].set_ylabel('Training')
-                if j == 8:
-                    ax[i].set_ylabel('Validation')
-                # if j in [8, 9, 10]:  # share train and val loss y axes
-                #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
-        except Exception as e:
-            LOGGER.info(f"Warning: Plotting error for {f}: {e}")
+        data = pd.read_csv(f)
+        data.columns = [x.strip() for x in data.columns]
+        data = data.rename(columns=dic)
+        print(data.columns)
+        s = [x.strip() for x in data.columns]
+        print(s)
+        x = data.values[:, 0]
+        for i, j in enumerate([1, 2, 3, 8, 9, 10]):
+            print(data)
+            y = data.values[:, j].astype("float")
+            # y[y == 0] = np.nan  # don't show zero values
+            ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8, color='#ff87a5')  # actual results
+            ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=2, color='#666296')  # smoothing line
+            ax[i].set_title(s[j], fontsize=12)
+            if j == 1:
+                ax[i].set_ylabel('Training')
+            if j == 8:
+                ax[i].set_ylabel('Validation')
+            # if j in [8, 9, 10]:  # share train and val loss y axes
+            #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
     ax[1].legend()
     fig.tight_layout()
     fig.savefig(save_dir / "loss.png", dpi=600)
