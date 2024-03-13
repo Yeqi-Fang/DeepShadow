@@ -426,7 +426,7 @@ def plot_results(file="path/to/results.csv", dir=""):
             'x/lr2': 'lr2'
         }
     save_dir = Path(file).parent if file else Path(dir)
-    files = list(save_dir.glob("results*.csv"))
+    files = list(save_dir.glob("original*.csv"))
     fig, ax = plt.subplots(2, 3, figsize=(12, 6), tight_layout=True)
     ax = ax.ravel()
     assert len(files), f"No results.csv files found in {save_dir.resolve()}, nothing to plot."
@@ -439,7 +439,7 @@ def plot_results(file="path/to/results.csv", dir=""):
         print(s)
         x = data.values[:, 0]
         for i, j in enumerate([1, 2, 3, 8, 9, 10]):
-            print(data)
+            print(data.values[:, j])
             y = data.values[:, j].astype("float")
             # y[y == 0] = np.nan  # don't show zero values
             ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8, color='#ff87a5')  # actual results
@@ -475,6 +475,7 @@ def plot_results(file="path/to/results.csv", dir=""):
                 ax[i].plot(x, y, marker=".", label=f.stem, linewidth=2, markersize=8, color='#ff87a5')  # actual results
                 ax[i].plot(x, gaussian_filter1d(y, sigma=3), ":", label="smooth", linewidth=3, color='#666296')  # smoothing line
                 ax[i].set_title(s[j], fontsize=12)
+                ax[i].set_xlabel('Epoch')
                 # if j in [8, 9, 10]:  # share train and val loss y axes
                 #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
         except Exception as e:
