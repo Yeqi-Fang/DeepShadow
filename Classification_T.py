@@ -2,7 +2,7 @@ import datetime
 import os
 import cv2
 import torch
-import re 
+import re
 import glob
 import torchvision
 import numpy as np
@@ -34,7 +34,7 @@ D = 6.5
 F = 131.4
 SIZE = 240
 num_epochs = 30
-BATCH_SIZE = 256
+BATCH_SIZE = 80
 DROPOUT_RATE = 0.5
 learning_rate = 1e-4
 weight_decay = 1e-4
@@ -42,7 +42,7 @@ critical_acc = 0.4
 root_dir = Path('tele_datasets')
 b = re.compile(r'AS(\d\.\d*e-\d*)_')
 
-for data_dir in root_dir.glob('reg_num*'):
+for data_dir in root_dir.glob('reg_num3_rect_wl1.000e-07_D6.50_F131.4_AS1.00e-04_BHSize64-75*'):
     angular_pixel_size_input_image = float(re.findall(b, str(data_dir))[0])
     # if angular_pixel_size_input_image not in [3e-5, 4e-5, 6e-5, 7e-4, 5e-5]:
     #     continue
@@ -71,7 +71,8 @@ for data_dir in root_dir.glob('reg_num*'):
 
     writer = SummaryWriter(curr_logs)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    csv_dir = f"{data_dir}/labels.csv"
+    print(f'Using {device} device')
+    csv_dir = data_dir / "labels.csv"
     os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
