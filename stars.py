@@ -105,7 +105,7 @@ class BH_stars_img():
 
         Returns:
             _type_: _description_
-        """        
+        """ 
         img = img.astype(np.int64)
         noisy_img = img + np.random.normal(loc=0, scale=radius, size=(self.height, self.width))
         noisy_img = np.where(noisy_img > 255, 255, noisy_img)
@@ -136,7 +136,7 @@ class BH_stars_img():
             size = np.random.randint(low=self.stars_lower_size, high=self.stars_upper_size)  # Size of the square grid
             sigma_x = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
             sigma_y = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
-            luminosity = (size - self.stars_lower_size) / (self.stars_upper_size - self.stars_lower_size) * \
+            luminosity = (size - self.stars_lower_size + 0.3) / (self.stars_upper_size - self.stars_lower_size) * \
                          np.random.uniform(0.5, 0.8)  # Maximum brightness at the center
             if color:
                 pass
@@ -220,31 +220,38 @@ class BH_stars_img():
         Args:
             txt_path (str, optional): _description_. Defaults to 'labels.txt'.
         """        
-        if self.shape == 'rect':
+        if self.num_BHs != 0:
+            if self.shape == 'rect':
+                
+                BH_df = pd.DataFrame(self.BH_lst, columns=['xc', 'yc', 'width', 'height'])
+                BH_df['type'] = 1
+                type_column = BH_df.pop('type')
+                BH_df.insert(0, 'type', type_column)
             
-            BH_df = pd.DataFrame(self.BH_lst, columns=['xc', 'yc', 'width', 'height'])
-            BH_df['type'] = 1
-            type_column = BH_df.pop('type')
-            BH_df.insert(0, 'type', type_column)
-        
+                stars_df = pd.DataFrame(self.stars_lst, columns=['xc', 'yc', 'width', 'height'])
+                stars_df['type'] = 0
+                type_column = stars_df.pop('type')
+                stars_df.insert(0, 'type', type_column)
+            
+            elif self.shape == 'circle':
+                BH_df = pd.DataFrame(self.BH_lst, columns=['xc', 'yc', 'radius'])
+                BH_df['type'] = 1
+                type_column = BH_df.pop('type')
+                BH_df.insert(0, 'type', type_column)
+            
+                stars_df = pd.DataFrame(self.stars_lst, columns=['xc', 'yc', 'radius'])
+                stars_df['type'] = 0
+                type_column = stars_df.pop('type')
+                stars_df.insert(0, 'type', type_column)
+
+            df = pd.concat([BH_df, stars_df])
+        # Convert to TXT file with space as delimiter
+        else:
             stars_df = pd.DataFrame(self.stars_lst, columns=['xc', 'yc', 'width', 'height'])
             stars_df['type'] = 0
             type_column = stars_df.pop('type')
             stars_df.insert(0, 'type', type_column)
-        
-        elif self.shape == 'circle':
-            BH_df = pd.DataFrame(self.BH_lst, columns=['xc', 'yc', 'radius'])
-            BH_df['type'] = 1
-            type_column = BH_df.pop('type')
-            BH_df.insert(0, 'type', type_column)
-        
-            stars_df = pd.DataFrame(self.stars_lst, columns=['xc', 'yc', 'radius'])
-            stars_df['type'] = 0
-            type_column = stars_df.pop('type')
-            stars_df.insert(0, 'type', type_column)
-
-        df = pd.concat([BH_df, stars_df])
-        # Convert to TXT file with space as delimiter
+            df = stars_df
         df.to_csv(txt_path, sep=' ', index=False, header=False)
 
 
