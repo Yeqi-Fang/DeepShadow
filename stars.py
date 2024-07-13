@@ -49,7 +49,7 @@ class BH_stars_img():
         if self.shape == 'circle':
             assert self.width == self.height, "Only support square images !!!"
 
-    def generate_distribution(self, size, sigma_x, sigma_y, center_color):
+    def generate_distribution(self, size, sigma_x, sigma_y):
         """_summary_
 
         Args:
@@ -66,11 +66,12 @@ class BH_stars_img():
         X, Y = np.meshgrid(x, y)
         X /= size / 2
         Y /= size / 2
-        rho = np.random.uniform(0, 0.8)
+        rho = np.random.uniform(0, 0.6)
         dist_out = np.sqrt((X / sigma_x)**2 + (Y / sigma_y)**2 - 2*rho*X*Y / sigma_x / sigma_y)
-        # alpha = np.random.uniform(10, 15)
-        # u = 0.5
-        brightness = center_color / (np.exp(alpha * (dist_out - u)) + 1)
+        alpha = np.random.uniform(10, 15)
+        u = 0.5
+        brightness = 1 / (np.exp(alpha * (dist_out - u)) + 1)
+        # print(np.max(brightness))
         return brightness
     
     def put_small_images_tolarge_background(self, small_img, bg_height, bg_width, small_img_size):
@@ -135,11 +136,10 @@ class BH_stars_img():
             size = np.random.randint(low=self.stars_lower_size, high=self.stars_upper_size)  # Size of the square grid
             sigma_x = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
             sigma_y = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
-            luminosity = (size - self.stars_lower_size + 0.3) / (self.stars_upper_size - self.stars_lower_size) * \
-                         np.random.uniform(0.5, 0.8)  # Maximum brightness at the center
+            self.luminosity = np.random.uniform(0.15, 1)  # Maximum brightness at the center
             if color:
                 pass
-            brightness = self.generate_distribution(size, sigma_x, sigma_y, luminosity)
+            brightness = self.generate_distribution(size, sigma_x, sigma_y)
             larger_img, xc, yc = self.put_small_images_tolarge_background(brightness, self.height, self.width, size)
             self.stars_BHs_img += larger_img
             stars_lst[i, 0] = xc

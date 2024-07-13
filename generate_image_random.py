@@ -15,7 +15,7 @@ import shutil
 import numpy as np
 
 
-num_imgaes = 10
+num_imgaes = 1000
 height = 1024
 width = 1024
 shape = 'rect'
@@ -32,7 +32,7 @@ def generate_image_func(angular_pixel_size_input_image):
     )
 
     stars_config = dict(
-        BHs_path='tele_datasets/224/',num_stars=1, num_BHs=0, stars_lower_size=5, stars_upper_size=15,
+        BHs_path='tele_datasets/224/',num_stars=1, num_BHs=0, stars_lower_size=3, stars_upper_size=15,
         height=height, width=width, bg_color=0, shape=shape, BHS_lower_size=30, BH_upper_size=50
     )
 
@@ -95,9 +95,10 @@ def generate_image_func(angular_pixel_size_input_image):
         im_array = img.stars_BHs_img
         # plt.imshow(im_array)
         # plt.show()
+        # print(img.luminosity)
         intensity_image = telescope_simulator.get_intensity(im_array, show=show)
         conv_image = telescope_simulator.get_convolved_image(im_array, intensity_image, show=show)
-        output_img = telescope_simulator.generate_image(conv_image, show=show)
+        output_img = telescope_simulator.generate_image(conv_image, luminosity=img.luminosity, show=show)
         # output_img = telescope_simulator.generate_image(show=False)
         output_img = output_img.astype(np.int64)
         noisy_img = output_img + np.random.normal(loc=0, scale=noise_radius, size=(height, width))
@@ -109,7 +110,7 @@ def generate_image_func(angular_pixel_size_input_image):
         img.txtGen(txt_path=txt_path)
 
 
-
+ 
     if mode == 'csv':
         df.to_csv(f"{data_dir}/train.csv", header=False, index=False)
 
@@ -127,9 +128,9 @@ def generate_image_func(angular_pixel_size_input_image):
 
 if __name__ == '__main__':
     # np.arange(5e-5, 2e-4, 1e-5)
-    angular_pixel_size_input_images = np.arange(5e-4, 1e-3, 5e-5)
+    angular_pixel_size_input_images = np.arange(2e-4, 1e-3, 5e-5)
     t1 = time.perf_counter()
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(10) as executor:
         executor.map(generate_image_func, angular_pixel_size_input_images)
     # for i in angular_pixel_size_input_images:
     #     generate_image_func(i)

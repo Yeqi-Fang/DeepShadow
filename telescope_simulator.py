@@ -140,11 +140,11 @@ class TelescopeSimulator():
             np.array: image after convolving
         """        
         # print(im_array.shape, intensity_image.shape)
-        convolved_array_shape = np.shape(signal.convolve(im_array, intensity_image*(1/np.max(intensity_image)))) #this line carries out a test convolution to get the shape of the convolved arrays for the variable convolved_array
+        convolved_array_shape = np.shape(signal.convolve(im_array, intensity_image * (1 / np.max(intensity_image)))) #this line carries out a test convolution to get the shape of the convolved arrays for the variable convolved_array
 
         convolved_array = np.zeros((convolved_array_shape[0],convolved_array_shape[1])) 
-        convolved_array = signal.convolve(im_array, intensity_image*(1/np.max(intensity_image)))
-        convolved_array = np.uint8((convolved_array)*(254/np.max(convolved_array)))
+        convolved_array = signal.convolve(im_array, intensity_image*(1 / np.max(intensity_image)))
+        convolved_array = np.uint8((convolved_array)*(254 / np.max(convolved_array)))
         
         # convolved_array.sum() / im_array.sum()
 
@@ -154,7 +154,7 @@ class TelescopeSimulator():
         
         return convolved_array
     
-    def generate_image(self, convolved_array, show=True):
+    def generate_image(self, convolved_array, luminosity=1, show=True):
         """_summary_
 
         Args:
@@ -182,7 +182,7 @@ class TelescopeSimulator():
         f = interpolate.interp2d(x_psf_samples, y_psf_samples, convolved_array, kind='cubic')
         output_image = f(x_CCD, y_CCD)
 
-        output_image = np.uint8((output_image)*(255/np.max(output_image)))
+        output_image = np.uint8((output_image)*(255 * luminosity/np.max(output_image)))
 
         if show:
             plt.imshow(output_image)
