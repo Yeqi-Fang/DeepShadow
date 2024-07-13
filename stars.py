@@ -66,11 +66,10 @@ class BH_stars_img():
         X, Y = np.meshgrid(x, y)
         X /= size / 2
         Y /= size / 2
-        rho = np.random.uniform(0, 0.1)
+        rho = np.random.uniform(0, 0.8)
         dist_out = np.sqrt((X / sigma_x)**2 + (Y / sigma_y)**2 - 2*rho*X*Y / sigma_x / sigma_y)
-        dist_out = np.sqrt((X / sigma_x)**2 + (Y / sigma_y)**2 - 2*rho*X*Y / sigma_x / sigma_y)
-        alpha = np.random.uniform(10, 15)
-        u = 0.5
+        # alpha = np.random.uniform(10, 15)
+        # u = 0.5
         brightness = center_color / (np.exp(alpha * (dist_out - u)) + 1)
         return brightness
     
