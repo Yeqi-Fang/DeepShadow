@@ -91,7 +91,7 @@ def generate_image_func(angular_pixel_size_input_image):
             bh_path = f"{data_dir}/images/BHs_{code}.png"
             txt_path = f"{data_dir}/labels/BHs_{code}.txt"
         # print(i)
-        show=True
+        show=False
         im_array = img.stars_BHs_img
         # plt.imshow(im_array)
         # plt.show()
