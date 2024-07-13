@@ -66,12 +66,12 @@ class BH_stars_img():
         X, Y = np.meshgrid(x, y)
         X /= size / 2
         Y /= size / 2
-        rho = np.random.uniform(0, 0.1)
+        rho = np.random.uniform(0, 0.8)
         dist_out = np.sqrt((X / sigma_x)**2 + (Y / sigma_y)**2 - 2*rho*X*Y / sigma_x / sigma_y)
-        dist_out = np.sqrt((X / sigma_x)**2 + (Y / sigma_y)**2 - 2*rho*X*Y / sigma_x / sigma_y)
-        alpha = np.random.uniform(10, 15)
-        u = 0.5
-        brightness = center_color / (np.exp(alpha * (dist_out - u)) + 1)
+        # alpha = np.random.uniform(10, 15)
+        # u = 0.5
+        # brightness = center_color / (np.exp(alpha * (dist_out - u)) + 1)
+        brightness = dist_out
         return brightness
     
     def put_small_images_tolarge_background(self, small_img, bg_height, bg_width, small_img_size):
@@ -137,7 +137,7 @@ class BH_stars_img():
             sigma_x = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
             sigma_y = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
             luminosity = (size - self.stars_lower_size + 0.3) / (self.stars_upper_size - self.stars_lower_size) * \
-                         np.random.uniform(0.5, 0.8)  # Maximum brightness at the center
+                         np.random.uniform(0.4, 0.8)  # Maximum brightness at the center
             if color:
                 pass
             brightness = self.generate_distribution(size, sigma_x, sigma_y, luminosity)

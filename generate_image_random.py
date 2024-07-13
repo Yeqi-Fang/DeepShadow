@@ -91,7 +91,7 @@ def generate_image_func(angular_pixel_size_input_image):
             bh_path = f"{data_dir}/images/BHs_{code}.png"
             txt_path = f"{data_dir}/labels/BHs_{code}.txt"
         # print(i)
-        show=False
+        show=True
         im_array = img.stars_BHs_img
         # plt.imshow(im_array)
         # plt.show()
@@ -115,21 +115,12 @@ def generate_image_func(angular_pixel_size_input_image):
 
 
 
-    # img_lst = glob.glob(f'{data_dir}/*/*/*.png')
-
-
-    # for img_name in tqdm(img_lst):
-    #     img = cv2.imread(img_name, cv2.IMREAD_GRAYSCALE)
-    #     img_resize = cv2.resize(img, (1024, 1024))
-    #     cv2.imwrite(img_name, img_resize)
-
-
 
 if __name__ == '__main__':
     # np.arange(5e-5, 2e-4, 1e-5)
-    angular_pixel_size_input_images = np.arange(5e-4, 1e-3, 5e-5)
+    angular_pixel_size_input_images = np.arange(2e-4, 1e-3, 5e-5)
     t1 = time.perf_counter()
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(10) as executor:
         executor.map(generate_image_func, angular_pixel_size_input_images)
     # for i in angular_pixel_size_input_images:
     #     generate_image_func(i)
@@ -138,4 +129,3 @@ if __name__ == '__main__':
     with open('tele_datasets/records.txt', 'a') as f:
         for i in angular_pixel_size_input_images:
             f.write(f'{i:2e}\n')
-
