@@ -1,0 +1,2 @@
+date,Model_name,Batch_size,Resolution,No. training,No. testing,Training Epoch,More,box_loss,obj_loss,cls_loss,precision,recall,mAP_0.5,mAP_0.5:0.95,No. star,No. BH,Time,BH_lower_size,BH_upper_size,init_size,wavelength,D,F,angular_pixel_size_input_image,CCD_pixel_size,CCD_pixel_count,noise_radius
+2024-07-14_14-09-40,yolov5,2,1024,800.0,200.0,30,,0.012756,0.081205,0.0,0.052811,0.945,0.052281,0.037247,,,984.2088069,,,,,,,,,,20

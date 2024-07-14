@@ -16,7 +16,7 @@ import utils
 
 
 TRAIN = True
-EPOCHS = 300
+EPOCHS = 30
 star = 10
 BH = 1
 num_photo = 1000
@@ -73,13 +73,6 @@ mAP_05 = best['metrics/mAP_0.5']
 mAP_0595 = best['metrics/mAP_0.5:0.95']
 
 
-with open(f"{data_dir}/telescope_config.json", "r") as json_file:
-    telescope_config = json.load(json_file)
-
-with open(f"{data_dir}/stars_config.json", "r") as json_file:
-    stars_config = json.load(json_file)
-
-
 a = {
     'Model_name': 'yolov5',
     'Batch_size': batch_size,
@@ -99,9 +92,6 @@ a = {
     'noise_radius': noise_radius,
 }
 
-df = pd.read_csv('logs_yolo/results.csv')
+df = pd.read_csv('logs_yolo_stellar/results.csv')
 df = pd.concat([df, pd.DataFrame([a])], ignore_index=True)
-df.to_csv('logs_yolo/results.csv', index=False)
-
-
-
+df.to_csv('logs_yolo_stellar/results.csv', index=False)

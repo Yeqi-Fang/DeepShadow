@@ -21,6 +21,8 @@ width = 1024
 shape = 'rect'
 mode = 'train_val'
 noise_radius = 0
+bg_color=0
+
 
 def generate_image_func(angular_pixel_size_input_image):
 
@@ -32,8 +34,8 @@ def generate_image_func(angular_pixel_size_input_image):
     )
 
     stars_config = dict(
-        BHs_path='tele_datasets/224/',num_stars=1, num_BHs=0, stars_lower_size=3, stars_upper_size=15,
-        height=height, width=width, bg_color=0, shape=shape, BHS_lower_size=30, BH_upper_size=50
+        BHs_path='tele_datasets/224/',num_stars=1, num_BHs=0, stars_lower_size=3, stars_upper_size=50,
+        height=height, width=width, bg_color=bg_color, shape=shape, BHS_lower_size=30, BH_upper_size=50
     )
 
     data_dir = f'tele_datasets/Changing/num{num_imgaes}_{shape}_wl{tele_config["wavelength"]:.3e}_'\
@@ -100,6 +102,9 @@ def generate_image_func(angular_pixel_size_input_image):
         conv_image = telescope_simulator.get_convolved_image(im_array, intensity_image, show=show)
         output_img = telescope_simulator.generate_image(conv_image, luminosity=img.luminosity, show=show)
         # output_img = telescope_simulator.generate_image(show=False)
+        stellar_size = np.sqrt(np.sum(output_img - bg_color) / (np.max(output_img - bg_color) / 1.5))
+        img.stars_lst[0, 2] = stellar_size / width
+        img.stars_lst[0, 3] = stellar_size / height
         output_img = output_img.astype(np.int64)
         noisy_img = output_img + np.random.normal(loc=0, scale=noise_radius, size=(height, width))
         noisy_img = np.where(noisy_img > 255, 255, noisy_img)
@@ -128,7 +133,7 @@ def generate_image_func(angular_pixel_size_input_image):
 
 if __name__ == '__main__':
     # np.arange(5e-5, 2e-4, 1e-5)
-    angular_pixel_size_input_images = np.arange(2e-4, 1e-3, 5e-5)
+    angular_pixel_size_input_images = np.arange(1e-4, 1e-3, 5e-5)
     t1 = time.perf_counter()
     with concurrent.futures.ProcessPoolExecutor(10) as executor:
         executor.map(generate_image_func, angular_pixel_size_input_images)

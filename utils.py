@@ -189,7 +189,7 @@ def plot_circle(image, circles, labels, confs=None):
         # denormalize the coordinates
         x = int(x*w)
         y = int(y*h)
-        r = int(np.sqrt(wl*w*hl*h) * 1.1)
+        r = int(np.sqrt(wl*w*hl*h / 4) * 1.1)
 
         class_name = class_names[int(labels[box_num])]
 
@@ -272,6 +272,8 @@ def labels_plot(image_paths, label_paths, num_samples, SHOW=False, SAVE=False, s
                 labels.append(label)
         if conf:
             result_image = plot_circle(image, bboxes, labels, confs)
+        else:
+            result_image = plot_circle(image, bboxes, labels)
         plt.subplot(1, subplots_col, i+1)
         plt.imshow(result_image[:, :, ::-1])
         plt.axis('off')

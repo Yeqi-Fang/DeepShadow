@@ -66,7 +66,7 @@ class BH_stars_img():
         X, Y = np.meshgrid(x, y)
         X /= size / 2
         Y /= size / 2
-        rho = np.random.uniform(0, 0.6)
+        rho = np.random.uniform(-.1, .1)
         dist_out = np.sqrt((X / sigma_x)**2 + (Y / sigma_y)**2 - 2*rho*X*Y / sigma_x / sigma_y)
         alpha = np.random.uniform(10, 15)
         u = 0.5
@@ -134,8 +134,8 @@ class BH_stars_img():
         for i in range(self.num_stars):
             # Parameters
             size = np.random.randint(low=self.stars_lower_size, high=self.stars_upper_size)  # Size of the square grid
-            sigma_x = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
-            sigma_y = np.random.uniform(0.9, 1.1)  # Standard deviation for the Gaussian distribution
+            sigma_x = np.random.uniform(0.8, 1.2)  # Standard deviation for the Gaussian distribution
+            sigma_y = np.random.uniform(0.8, 1.1)  # Standard deviation for the Gaussian distribution
             self.luminosity = np.random.uniform(0.15, 1)  # Maximum brightness at the center
             if color:
                 pass
