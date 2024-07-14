@@ -40,7 +40,7 @@ np.random.seed(2024)
 t1 = time.perf_counter()
 data_dir = 'tele_datasets/mixed'
 
-RES_DIR = utils.set_res_dir(TRAIN=TRAIN)
+RES_DIR = utils.set_res_dir(date_string, TRAIN=TRAIN)
 # yolov5s.pt
 yaml = os.path.join(data_dir, 'data.yaml')
 

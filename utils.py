@@ -286,15 +286,15 @@ def labels_plot(image_paths, label_paths, num_samples, SHOW=False, SAVE=False, s
     if SHOW:
         plt.show()
     
-def set_res_dir(TRAIN):
+def set_res_dir(date_string, TRAIN):
     # Directory to store results
     res_dir_count = len(glob.glob('runs/train/*'))
     print(f"Current number of result directories: {res_dir_count}")
     if TRAIN:
-        RES_DIR = f"results_{res_dir_count+1}"
+        RES_DIR = f"{date_string}_results_{res_dir_count+1}"
         print(RES_DIR)
     else:
-        RES_DIR = f"results_{res_dir_count}"
+        RES_DIR = f"{date_string}_results_{res_dir_count}"
     return RES_DIR
 
 

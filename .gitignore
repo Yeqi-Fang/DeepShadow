@@ -65,4 +65,11 @@ logs_yolo/*/runs/train/results_*/*
 !logs_yolo/*/runs/train/results_*/results.csv
 !logs_yolo/*/runs/train/results_*/*.npy
 !logs_yolo/results.csv
+logs_yolo_stellar/*/label_plot.p*
+logs_yolo_stellar/*/runs/detect/*
+logs_yolo_stellar/*/runs/evolve/*
+logs_yolo_stellar/*/runs/train/results_*/*
+!logs_yolo_stellar/*/runs/train/results_*/results.csv
+!logs_yolo_stellar/*/runs/train/results_*/*.npy
+!logs_yolo_stellar/results.csv
 yolov5/
