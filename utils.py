@@ -107,8 +107,8 @@ class LinearNDInterpolatorExt(object):
 
 class_names = ['star', 'BH']
 # colors = np.random.uniform(0, 255, size=(len(class_names), 3))
-colors = ['#d78398', '#845EC2', ]
-colors = list(map(hex_to_rgb, colors))
+colors = ['#5387D4', '#845EC2', ]
+colors = list(map(hex_to_bgr, colors))
 
 # Function to convert bounding boxes in YOLO format to xmin, ymin, xmax, ymax.
 def yolo2bbox(bboxes):
@@ -204,12 +204,18 @@ def plot_circle(image, circles, labels, confs=None):
 
         p1, p2 = (int(x - r), int(y - r)), (int(x + r), int(y + r))
         # Text width and height
-        txt = class_name + f' {confs[box_num]:.3f}' if confs else class_name
+        txt = f'{confs[box_num]:.2f}' if confs else class_name
         tw, th = cv2.getTextSize(
             txt,
             0, fontScale=font_scale, thickness=font_thickness
         )[0]
-        p2 = p1[0] + tw + 10, p1[1] - th - 10
+        th += 3
+        outside = p1[1] >= th  # label fits outside box
+        if p1[0] > w - tw:  # shape is (h, w), check if label extend beyond right side of image
+            p1 = w - tw, p1[1]
+        # p2 = p1[0] + tw + 10, p1[1] - th - 10
+        p2 = p1[0] + tw, p1[1] - th if outside else p1[1] + th
+        # print(p1, p2)
         cv2.rectangle(
             image,
             p1, p2,
@@ -217,10 +223,10 @@ def plot_circle(image, circles, labels, confs=None):
             thickness=-1,
         )
         if class_name == 'BH':
-            cv2.putText(image, txt, (x - r + 1, y - r - 6), cv2.FONT_HERSHEY_TRIPLEX,
+            cv2.putText(image, txt, (p1[0], p1[1] - 2 if outside else p1[1] + th - 1), cv2.FONT_HERSHEY_TRIPLEX,
             font_scale, (255, 255, 255), font_thickness)
         else:
-            cv2.putText(image, txt, (x - r + 1, y - r - 6), cv2.FONT_HERSHEY_TRIPLEX,
+            cv2.putText(image, txt, (p1[0], p1[1] - 2 if outside else p1[1] + th - 1), cv2.FONT_HERSHEY_TRIPLEX,
             font_scale, (255, 255, 255), font_thickness)
     return image
 
